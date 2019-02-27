@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<MobileDevice>20080411</MobileDevice>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.032,E:\XE7\Bluetooth\C_test_My_RGB_App\RGB_AppPCH1.h=E:\XE7\Bluetooth\C_test_My_RGB_App\ClBluetoothCppPCH1.h</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.333,E:\XE7\Bluetooth\Z_ok_Vorlage Bluetooth\MyBluetooth.cbproj=E:\XE7\Bluetooth\Z_ok_Vorlage Bluetooth\RGB_App.cbproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.047,E:\XE7\Bluetooth\C_test_My_RGB_App\RGB_App.cbproj=E:\XE7\Bluetooth\C_test_My_RGB_App\ClBluetoothCpp.cbproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.318,E:\XE7\Bluetooth\Z_ok_Vorlage Bluetooth\MyBluetoothPCH1.h=E:\XE7\Bluetooth\Z_ok_Vorlage Bluetooth\RGB_AppPCH1.h</Transaction>
+  </Transactions>
+</BorlandProject>

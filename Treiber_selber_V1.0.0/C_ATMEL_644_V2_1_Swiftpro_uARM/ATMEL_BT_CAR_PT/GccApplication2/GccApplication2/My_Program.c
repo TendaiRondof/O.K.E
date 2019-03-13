@@ -275,23 +275,20 @@ unsigned char taster;
 
 clear_lcd();
 send_to_uArm("P2201\n");
-
+send_to_uArm("G2202 N0 V45\n");
+send_to_uArm("G2202 N1 V45\n");
 write_zahl(0,7,version,2,2,2);
 	while(1)
 	{
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
 		
+		send_to_uArm("G2202 N0 V90\n");
 		
+		if (DIP_Switch>0)
+		{
+		}
 		
-		if (taster==(0x01|0x10))
-		{
-			send_to_uArm("G0 M2202 N0\n");
-		}
-		if (taster==(0x02|0x20))
-		{
-			send_to_uArm("G0 M2201 N0\n");
-		}
 		
 	} //end while(1)
 } // end main

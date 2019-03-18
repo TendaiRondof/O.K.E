@@ -283,7 +283,7 @@ write_zahl(0,7,version,2,2,2);
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
 		
-		send_to_uArm("G2202 N0 V90\n");
+		send_to_uArm("G2202 N0 V90\n");7
 		
 		if (DIP_Switch>0)
 		{

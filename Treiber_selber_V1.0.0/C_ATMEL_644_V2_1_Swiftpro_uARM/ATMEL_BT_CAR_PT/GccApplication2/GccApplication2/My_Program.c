@@ -9,6 +9,8 @@
 
 ****************************************************************************/
 
+//snprintf(test,100,"G2204 X%d Y10 Z10 F1000\n",45);
+
 #include <avr/io.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,8 +30,8 @@ u8 DIP_Switch=0, LCD_Taster=0, k=0,m=0;
 u16 x_Wert_ADC,y_Wert_ADC;
 
 #define UART_MAXSTRLEN 50
-#define LEFT			0
-#define RIGHT			1
+#define LEFT			1
+#define RIGHT			2
 #define UP				3
 #define DOWN			4
 #define BACKWARD		5
@@ -38,6 +40,8 @@ u8 uart_str_complete = 0;     // 1 --> String komplett empfangen
 u8 uart_str_count = 0;
 char uart_string[UART_MAXSTRLEN + 1] = "";
 char uart_string_send[UART_MAXSTRLEN + 1] = "";
+unsigned char data [50];
+
 
 u8 get_DIP_Switch(void)
 {
@@ -299,9 +303,6 @@ void get_tecnical_data (unsigned char data_request)
 		send_to_uArm("P2400\n");
 		break;
 		
-		case default	//send back error
-		
-		break;
 	}
 	
 	
@@ -313,60 +314,79 @@ void emergency_stop (void)
 	to_uARM("@9 V0\n");
 }
 
-void move (unsigned char direction, unsigned char amount)
+void move (unsigned char direction, int amount)
 {
+	
+	
 	switch (direction)
 	{
-		case LEFT:
-		break;
-		
-		case RIGHT:
-		break;
-		
-		case UP:
-		break;
-		
-		case DOWN:
-		break;
-		
 		case BACKWARD:
+		amount=amount*-1;
+		snprintf(data,50,"G2204 X%d Y00 Z00 F1000\n",amount);
+		to_uARM(data);
+		
 		break;
 		
 		case FORWARD:
+		snprintf(data,50,"G2204 X%d Y00 Z00 F1000\n",amount);
+		to_uARM(data);
 		break;
 		
-		case default
+		case UP:
+		snprintf(data,50,"G2204 X00 Y00 Z%d F1000\n",amount);
+		to_uARM(data);
 		break;
+		
+		case DOWN:
+		amount=amount*-1;
+		snprintf(data,50,"G2204 X00 Y00 Z%d F1000\n",amount);
+		to_uARM(data);
+		break;
+		
+		case RIGHT:
+		amount=amount*-1;
+		snprintf(data,50,"G2204 X00 Y%d Z00 F1000\n",amount);
+		to_uARM(data);
+		break;
+		
+		case LEFT:
+		snprintf(data,50,"G2204 X00 Y%d Z00 F1000\n",amount);
+		to_uARM(data);
+		break;
+		
 	}
 }
 
+void setup_bt ()
+{
+	to_uARM("M2234 V1\n");
+	to_uARM("M2245 GUGUSELI\n");
+	
+}
 
 
 
 int main (void)
 {
-	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert
-	//write_text(0,4, PSTR("READY TO GO!"));	
+	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert	
 	wait_1ms(1000);	
 	clear_lcd();				// LCD clear
 	init_ADC();
 	init_UART0();
-	send_to_uArm("G0 M202 N0\n");
-	unsigned char version;
+	send_to_uArm("M2202 N0\n");
 	unsigned char taster;
-
-clear_lcd();
-send_to_uArm("P2201\n");
-//send_to_uArm("G2202 N0 V45\n");
-//send_to_uArm("G2202 N1 V45\n");
-write_zahl(0,7,version,2,2,2);
+	int i;
+	clear_lcd();
+	//setup_bt();
 	while(1)
 	{
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
-		
+		//move(taster,10);
+		//move(taster,1);
+		write_zahl(1,1,taster,4,0,0);
 		
 		
 			
 	} //end while(1)
-} // end main
+} //end main

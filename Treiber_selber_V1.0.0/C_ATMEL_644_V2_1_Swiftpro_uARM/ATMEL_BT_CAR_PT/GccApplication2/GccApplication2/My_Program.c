@@ -28,6 +28,12 @@ u8 DIP_Switch=0, LCD_Taster=0, k=0,m=0;
 u16 x_Wert_ADC,y_Wert_ADC;
 
 #define UART_MAXSTRLEN 50
+#define LEFT			0
+#define RIGHT			1
+#define UP				3
+#define DOWN			4
+#define BACKWARD		5
+#define FORWARD			6
 u8 uart_str_complete = 0;     // 1 --> String komplett empfangen
 u8 uart_str_count = 0;
 char uart_string[UART_MAXSTRLEN + 1] = "";
@@ -257,9 +263,85 @@ ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
   }
 }
 
-// ==============================================================================================================
-// Hier beginnt das Hauptprogramm "main"
-// --------------------------------------------------------------------------------------------------------------
+void get_tecnical_data (unsigned char data_request)
+{
+	switch (data_request)
+	{
+		case 0x01:	//get_angles of joints
+			send_to_uArm("P2200\n");
+		break;
+		
+		case 0x02:	//get_devicename
+			send_to_uArm("P2201\n");		
+		break;
+		
+		case 0x03:	//get hardware version
+			send_to_uArm("P2202\n");
+		break;
+		
+		case 0x04:	//get softwareversion
+			send_to_uArm("P2203\n");
+		break;
+		
+		case 0x05:	//get API version
+			send_to_uArm("P2204\n");
+		break;
+		
+		case 0x06:	//get UID
+			send_to_uArm("P2205\n");
+		break;
+		
+		case 0x07:	//get current coordinates
+			send_to_uArm("P2220\n");
+		break;
+		
+		case 0x08:	//check status
+		send_to_uArm("P2400\n");
+		break;
+		
+		case default	//send back error
+		
+		break;
+	}
+	
+	
+	
+}
+
+void emergency_stop (void)
+{
+	to_uARM("@9 V0\n");
+}
+
+void move (unsigned char direction, unsigned char amount)
+{
+	switch (direction)
+	{
+		case LEFT:
+		break;
+		
+		case RIGHT:
+		break;
+		
+		case UP:
+		break;
+		
+		case DOWN:
+		break;
+		
+		case BACKWARD:
+		break;
+		
+		case FORWARD:
+		break;
+		
+		case default
+		break;
+	}
+}
+
+
+
 
 int main (void)
 {
@@ -271,24 +353,20 @@ int main (void)
 	init_UART0();
 	send_to_uArm("G0 M202 N0\n");
 	unsigned char version;
-unsigned char taster;
+	unsigned char taster;
 
 clear_lcd();
 send_to_uArm("P2201\n");
-send_to_uArm("G2202 N0 V45\n");
-send_to_uArm("G2202 N1 V45\n");
+//send_to_uArm("G2202 N0 V45\n");
+//send_to_uArm("G2202 N1 V45\n");
 write_zahl(0,7,version,2,2,2);
 	while(1)
 	{
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
 		
-		send_to_uArm("G2202 N0 V90\n");7
-		
-		if (DIP_Switch>0)
-		{
-		}
 		
 		
+			
 	} //end while(1)
 } // end main

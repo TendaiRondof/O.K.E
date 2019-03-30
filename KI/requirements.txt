@@ -1,7 +1,0 @@
-numpy
-keras
-keras_rcnn
-scikit-image
-keras_resnet
-matplotlib
-jasonschema

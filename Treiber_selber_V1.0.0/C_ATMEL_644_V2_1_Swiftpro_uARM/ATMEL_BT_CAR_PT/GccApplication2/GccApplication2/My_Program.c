@@ -212,21 +212,21 @@ int Get_uArm_Koordinate(char Achse)
 		//write_text_ram(k, 0, ptr_Abschnitt); //Ausgabe Array
 		switch(Achse)
 		{
-			case 'X':	if (k==1) //Abschnitt mit X
+			case 1:	if (k==1) //Abschnitt mit X
 						{
 							Wert_tmp=atof(++ptr_Abschnitt);//;atof(ptr_Abschnitt);
 							Wert=(int)(Wert_tmp);
 							return(Wert);
 						}
 						break;
-			case 'Y':	if (k==2) //Abschnitt mit Y
+			case 2:	if (k==2) //Abschnitt mit Y
 						{
 							Wert_tmp=atof(++ptr_Abschnitt);//;atof(ptr_Abschnitt);
 							Wert=(int)(Wert_tmp);
 							return(Wert);
 						}
 						break;	
-			case 'Z':	if (k==3) //Abschnitt mit Z
+			case 3:	if (k==3) //Abschnitt mit Z
 						{
 							Wert_tmp=atof(++ptr_Abschnitt);//;atof(ptr_Abschnitt);
 							Wert=(int)(Wert_tmp);
@@ -304,14 +304,6 @@ void get_tecnical_data (unsigned char data_request)
 		break;
 		
 	}
-	
-	
-	
-}
-
-void emergency_stop (void)
-{
-	to_uARM("@9 V0\n");
 }
 
 void move (unsigned char direction, int amount)
@@ -364,6 +356,34 @@ void setup_bt ()
 	
 }
 
+unsigned char get_direction()
+{
+	unsigned int x;
+	unsigned int y;
+	x=get_ADC_Channel(1);
+	y=get_ADC_Channel(0);
+	if (x>700)
+	{
+		return LEFT;
+	}
+	if (x<300)
+	{
+		return RIGHT;
+	}
+	
+	if (y>700)
+	{
+		return BACKWARD;
+	}
+	if (y<300)
+	{
+		return FORWARD;
+	}
+	if ((x>300)&&(x<700)&&(y<700)&&(y>300))
+	{
+		return 0;
+	}
+}
 
 
 int main (void)
@@ -373,20 +393,49 @@ int main (void)
 	clear_lcd();				// LCD clear
 	init_ADC();
 	init_UART0();
-	send_to_uArm("M2202 N0\n");
 	unsigned char taster;
 	int i;
+	unsigned char direction;
+	unsigned char data_1;
+	unsigned char data_2;
+	unsigned char data_3;
+	unsigned char x1;
+	unsigned char y1;
+	unsigned char z1;
+	
 	clear_lcd();
-	//setup_bt();
 	while(1)
 	{
+		direction=get_direction();
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
-		//move(taster,10);
-		//move(taster,1);
-		write_zahl(1,1,taster,4,0,0);
-		
-		
+		move(direction,1);
+		if (taster&0x01)
+		{
+			move(UP,1);
+		}
+		if (taster&0x02)
+		{
+			move(DOWN,1);
+		}
+		if (taster&0x04)
+		{
+			//send_to_uArm("P2220\n");
+			x1=Get_uArm_Koordinate(1);
+			y1=Get_uArm_Koordinate(2);
+			z1=Get_uArm_Koordinate(3);
+			//XYZ_to_Display(50);
 			
+		}
+		if (taster&0x08)
+		{
+			send_to_uArm("G0 X200 Y0 Z150 F1000\n");
+			clear_lcd();
+		}
+		write_zahl(0,8,x1,6,2,2);
+		write_zahl(1,8,y1,6,2,2);
+		write_zahl(2,8,z1,6,2,2);
+		write_zahl(0,1,direction,4,0,0);
+		write_zahl(1,1,taster,4,0,0);	
 	} //end while(1)
 } //end main

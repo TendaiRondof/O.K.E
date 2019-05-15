@@ -402,12 +402,15 @@ int main (void)
 	unsigned char x1;
 	unsigned char y1;
 	unsigned char z1;
+	unsigned char alt=0;
+	unsigned char neu=0;
 	
 	clear_lcd();
 	while(1)
 	{
 		direction=get_direction();
 		taster = get_LCD_Taster();
+		neu=taster;
 		DIP_Switch=get_DIP_Switch();
 		move(direction,1);
 		if (taster&0x01)
@@ -427,15 +430,41 @@ int main (void)
 			//XYZ_to_Display(50);
 			
 		}
-		if (taster&0x08)
-		{
-			send_to_uArm("G0 X200 Y0 Z150 F1000\n");
-			clear_lcd();
-		}
+		//if (taster&0x08)
+		//{
+			//send_to_uArm("G0 X200 Y0 Z150 F1000\n");
+			//clear_lcd();
+		//}
 		write_zahl(0,8,x1,6,2,2);
 		write_zahl(1,8,y1,6,2,2);
 		write_zahl(2,8,z1,6,2,2);
 		write_zahl(0,1,direction,4,0,0);
 		write_zahl(1,1,taster,4,0,0);	
+		if (neu>alt)
+		{
+			switch (taster)
+			case 0x01:
+				move(LEFT,1);
+			break
+			
+			case 0x02:
+				move(BACKWARD,1);
+			break;
+			
+			case 0x04:
+				move(RIGHT,1);
+			break;
+			
+			case 0x08:
+				move(FORWARD,1);
+			break;
+			
+			case default:
+			send_to_uArm("G0 X200 Y0 Z150 F1000\n");
+			break;
+		}
+		
+		
+		alt=neu
 	} //end while(1)
 } //end main

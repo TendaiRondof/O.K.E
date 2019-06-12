@@ -473,8 +473,14 @@ int main (void)
 			case 4:
 			if (taster&0x08)
 			{
-				send_to_uArm("G0 X200 Y0 Z150 F1000\n");
+				send_to_uArm("G0 X170 Y0 Z160 F1000\n");			//ausgansgpkt
 				clear_lcd();
+			}
+			break;
+			case 5:
+			if (taster&0x01)
+			{
+				send_to_uArm("G0 X170 Y100 Z160 F1000\n");
 			}
 			break;
 		}

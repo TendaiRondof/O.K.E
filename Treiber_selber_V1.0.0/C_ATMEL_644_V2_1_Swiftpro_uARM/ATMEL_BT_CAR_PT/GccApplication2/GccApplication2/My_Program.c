@@ -52,10 +52,14 @@ typedef enum
 
 
 u8 uart_str_complete = 0;     // 1 --> String komplett empfangen
+u8 uart_str_complete1 = 0;     // 1 --> String komplett empfangen
 unsigned char data_bytes_recieved=0;
 u8 uart_str_count = 0;
+u8 uart_str_count1 = 0;
 char uart_string[UART_MAXSTELEN + 1] = "";
 char uart_string_send[UART_MAXSTELEN + 1] = "";
+char uart_string1[UART_MAXSTELEN + 1] = "";
+char uart_string_send1[UART_MAXSTELEN + 1] = "";
 unsigned char data [6];
 unsigned char final_data[6];
 
@@ -186,8 +190,8 @@ void to_uARM(char *_str)
 		send_Byte_1(*_str);
 		_str++;
 	}
-	uart_str_complete = 0; //String freigeben um Antwort zu empfangen
-	while (uart_str_complete == 0); //Warten bis Antwort erfolgt ist
+	uart_str_complete1 = 0; //String freigeben um Antwort zu empfangen
+	while (uart_str_complete1 == 0); //Warten bis Antwort erfolgt ist
 	//XYZ_to_Display(2000); //Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
 	//setzt dann uart_str_complete = 0
 
@@ -197,7 +201,7 @@ void send_to_uArm(char *str)
 {
 	to_uARM(str);
 	to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-	while(uart_string[4] == 0x31) //ASCII '1' --> moving
+	while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 	{
 		to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 	}
@@ -291,7 +295,7 @@ ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 	  if (data_bytes_recieved>4)
 	  {
 		data_bytes_recieved=0;
-		//copy data to different array
+		//copy data to different array	88 48 49 55 48
 		final_data[0]=data[0];
 		final_data[1]=data[1];
 		final_data[2]=data[2];
@@ -300,6 +304,20 @@ ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 		uart_str_complete=1; 
 	  }
   }   
+}
+
+ISR (USART1_RX_vect)
+{
+	unsigned char nextChar;
+  // Daten aus dem Puffer lesen
+
+  nextChar = UDR1;
+  
+   if (uart_str_count1<=4)
+  {
+	  uart_string1[uart_str_count1]=nextChar;
+	  uart_str_count1++;
+  }
 }
 
 void get_tecnical_data (unsigned char data_request)
@@ -443,27 +461,27 @@ int main (void)
 	unsigned int recieved_X;
 	unsigned int recieved_Y;
 	unsigned int recieved_Z;
-	unsigned char buffer [50];
+	unsigned char buffer [26];
 	
 	
 	clear_lcd();
 	while(1)
 	{
-		direction=get_direction();
+	//	direction=get_direction();
 		taster = get_LCD_Taster();
-		neu=taster;
-		DIP_Switch=get_DIP_Switch();
-		move(direction,1);
+	//	neu=taster;
+	//	DIP_Switch=get_DIP_Switch();
+		//move(direction,1);
 		
 		
-		write_zahl(0,8,x1,6,2,2);
-		write_zahl(1,8,y1,6,2,2);
-		write_zahl(2,8,z1,6,2,2);
-		write_zahl(0,1,direction,4,0,0);
-		write_zahl(1,1,taster,4,0,0);	
+	//	write_zahl(0,8,x1,6,2,2);
+		//write_zahl(1,8,y1,6,2,2);
+	//	write_zahl(2,8,z1,6,2,2);
+	//	write_zahl(0,1,direction,4,0,0);
+	//	write_zahl(1,1,taster,4,0,0);	
 		
 		
-		switch (DIP_Switch)
+	/*	switch (DIP_Switch)
 		{
 			case CASE1:
 				if (taster&0x01)
@@ -518,35 +536,47 @@ int main (void)
 				clear_lcd();
 			}
 			break;
-			case MOVE_PROTOTYPE_5:
-			if (uart_str_complete!=0)
-			{
-				uart_str_complete=0;
-				send_Byte_0('A');
-			}
-			switch (final_data[0])//final data decoding
-			{
-				case 'X':
-					recieved_X=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
-				break;
-				
-				case 'Y':
-					recieved_Y=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
-				break;
-				
-				case 'Z':
-					recieved_Z=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
-				break;
-			}
-			snprintf(buffer,50,"G0 X%d Y%d Z150 F1000\n",recieved_X,recieved_Y);
-			send_to_uArm(buffer);
+			case 5:
+			
 			
 			
 			
 			
 			
 			break;
-		}
+			*/
+			
+			if (uart_str_complete!=0)
+			{
+				uart_str_complete=0;
+				send_Byte_0('A');
+				
+				switch (final_data[0])//final data decoding
+				{
+					case 'X':
+						recieved_X=(final_data[1]-48)*1000+(final_data[2]-48)*100+(final_data[3]-48)*10+final_data[4]-48;
+					break;
+				
+					case 'Y':
+						recieved_Y=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
+					break;
+				
+					case 'Z':
+						recieved_Z=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
+					break;
+				}
+			}
+			
+			if (taster!=0)
+			{
+				snprintf(buffer,50,"G0 X%d Y000 Z150 F1000\n",recieved_X);
+				send_to_uArm(buffer);
+			}
+			
+			
+			
+			
+		//}
 		alt=neu;
 	} //end while(1)
 } //end main

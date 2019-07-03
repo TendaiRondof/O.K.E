@@ -29,18 +29,35 @@ int x_Koordinate,y_Koordinate,x_tmp,y_tmp,alt_x_tmp,alt_y_tmp,z_Koordinate,speed
 u8 DIP_Switch=0, LCD_Taster=0, k=0,m=0;
 u16 x_Wert_ADC,y_Wert_ADC;
 
-#define UART_MAXSTRLEN 50
+#define UART_MAXSTELEN 50
 #define LEFT			1
 #define RIGHT			2
 #define UP				3
 #define DOWN			4
 #define BACKWARD		5
 #define FORWARD			6
+
+
+
+
+typedef enum
+{
+	gagunggi,
+	CASE1,
+	CASE2,
+	CASE3,
+	CASE4,
+	MOVE_PROTOTYPE_5,
+} color;
+
+
 u8 uart_str_complete = 0;     // 1 --> String komplett empfangen
+unsigned char data_bytes_recieved=0;
 u8 uart_str_count = 0;
-char uart_string[UART_MAXSTRLEN + 1] = "";
-char uart_string_send[UART_MAXSTRLEN + 1] = "";
-unsigned char data [50];
+char uart_string[UART_MAXSTELEN + 1] = "";
+char uart_string_send[UART_MAXSTELEN + 1] = "";
+unsigned char data [6];
+unsigned char final_data[6];
 
 
 u8 get_DIP_Switch(void)
@@ -116,14 +133,31 @@ void init_UART0(void)
 	UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0); //TxD, RxD Enable und RxD Interrupt Enable
 }
 
-void send_Byte(u8 val)
+void init_UART1(void)
+{
+	// Initialisierung UART0 (RxD0, TxD0)
+	UBRR1 = 16;	//Bei 16MHZ und U2X0=1 --> 115k2 Baudrate
+	UCSR1A |= (1 << U2X1);
+	//UCSR0C muss nicht initialisiert werden, Standardwerte: Asynchron, 8Databits,Noneparity, ein Stopbit
+	UCSR1B |= (1 << RXCIE1) | (1 << RXEN1) | (1 << TXEN1); //TxD, RxD Enable und RxD Interrupt Enable
+}
+
+void send_Byte_0(u8 val)
 {
 	//Wait for empty Buffer
-	while( !(UCSR0A & (1<<UDRE0)) )
-	;
-	
+	while( !(UCSR0A & (1<<UDRE0)) );
 	UDR0=val;	//Transmit starts
 }
+
+void send_Byte_1(u8 val)
+{
+	//Wait for empty Buffer
+	while( !(UCSR1A & (1<<UDRE1)) )
+	;
+	
+	UDR1=val;	//Transmit starts
+}
+
 
 void XYZ_to_Display(u16 Delay_LCD)
 {
@@ -149,7 +183,7 @@ void to_uARM(char *_str)
 	//uart_string[m]='\0';
 	while (*_str)
 	{   
-		send_Byte(*_str);
+		send_Byte_1(*_str);
 		_str++;
 	}
 	uart_str_complete = 0; //String freigeben um Antwort zu empfangen
@@ -167,8 +201,8 @@ void send_to_uArm(char *str)
 	{
 		to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 	}
-	to_uARM("P2220\n"); //Koordinaten abfragen
-	XYZ_to_Display(0);	//Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
+	//to_uARM("P2220\n"); //Koordinaten abfragen
+	//XYZ_to_Display(0);	//Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
 						//setzt dann uart_str_complete = 0
 }
 
@@ -248,23 +282,24 @@ int Get_uArm_Koordinate(char Achse)
 ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 {
   unsigned char nextChar;
-
   // Daten aus dem Puffer lesen
   nextChar = UDR0;
-  if( uart_str_complete == 0 )
-  {	// Daten werden erst in uart_string geschrieben, wenn nicht String-Ende/max Zeichenlänge erreicht ist/string gerade verarbeitet wird
-    if( nextChar != '\n' && nextChar != '\r' && uart_str_count < UART_MAXSTRLEN )
-	{
-      uart_string[uart_str_count] = nextChar;
-      uart_str_count++;
-    }
-    else 
-	{
-      uart_string[uart_str_count] = '\0';
-      uart_str_count = 0;
-      uart_str_complete = 1;
-    }
-  }
+  if (data_bytes_recieved<=4)
+  {
+	  data[data_bytes_recieved]=nextChar;
+	  data_bytes_recieved++;
+	  if (data_bytes_recieved>4)
+	  {
+		data_bytes_recieved=0;
+		//copy data to different array
+		final_data[0]=data[0];
+		final_data[1]=data[1];
+		final_data[2]=data[2];
+		final_data[3]=data[3];
+		final_data[4]=data[4];
+		uart_str_complete=1; 
+	  }
+  }   
 }
 
 void get_tecnical_data (unsigned char data_request)
@@ -393,6 +428,7 @@ int main (void)
 	clear_lcd();				// LCD clear
 	init_ADC();
 	init_UART0();
+	init_UART1();
 	unsigned char taster;
 	int i;
 	unsigned char direction;
@@ -404,6 +440,11 @@ int main (void)
 	unsigned char z1;
 	unsigned char alt=0;
 	unsigned char neu=0;
+	unsigned int recieved_X;
+	unsigned int recieved_Y;
+	unsigned int recieved_Z;
+	unsigned char buffer [50];
+	
 	
 	clear_lcd();
 	while(1)
@@ -424,7 +465,7 @@ int main (void)
 		
 		switch (DIP_Switch)
 		{
-			case 1:
+			case CASE1:
 				if (taster&0x01)
 				{
 					move(UP,1);
@@ -444,7 +485,7 @@ int main (void)
 				}
 			break;
 			
-			case 2:
+			case CASE2:
 				if (neu>alt)
 				{
 					if (taster==0x01)
@@ -470,18 +511,40 @@ int main (void)
 				}
 			break;
 			
-			case 4:
+			case CASE4:
 			if (taster&0x08)
 			{
 				send_to_uArm("G0 X170 Y0 Z160 F1000\n");			//ausgansgpkt
 				clear_lcd();
 			}
 			break;
-			case 5:
-			if (taster&0x01)
+			case MOVE_PROTOTYPE_5:
+			if (uart_str_complete!=0)
 			{
-				send_to_uArm("G0 X170 Y100 Z160 F1000\n");
+				uart_str_complete=0;
+				send_Byte_0('A');
 			}
+			switch (final_data[0])//final data decoding
+			{
+				case 'X':
+					recieved_X=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
+				break;
+				
+				case 'Y':
+					recieved_Y=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
+				break;
+				
+				case 'Z':
+					recieved_Z=final_data[1]*1000+final_data[2]*100+final_data[3]*10+final_data[4];
+				break;
+			}
+			snprintf(buffer,50,"G0 X%d Y%d Z150 F1000\n",recieved_X,recieved_Y);
+			send_to_uArm(buffer);
+			
+			
+			
+			
+			
 			break;
 		}
 		alt=neu;

@@ -468,6 +468,8 @@ void back2pc (char *str)
 }
 
 
+
+
 int main (void)
 {
 	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert	
@@ -494,7 +496,6 @@ int main (void)
 	unsigned char check=0;
 	unsigned char counter=0;
 	
-	send_to_uArm("G0 X100 Y000 Z100 F1000\n");
 	clear_lcd();
 	while(1)
 	{
@@ -545,7 +546,7 @@ int main (void)
 				
 			}
 				//snprintf(buffer,50,"G0 X%d Y000 Z150 F1000\n",recieved_X);
-				snprintf(buffer,30,"G0 X%d Y%d Z150 F1000\n",recieved_X,recieved_Y);
+				snprintf(buffer,30,"G0 X%d Y%d Z150 F1000\n",recieved_X/3.3,recieved_Y/2.47);
 				write_zahl(2,0,recieved_X,4,0,0);
 				write_zahl(3,0,recieved_Y,4,0,0);
 				send_to_uArm(buffer);

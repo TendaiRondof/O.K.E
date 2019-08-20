@@ -467,7 +467,13 @@ void back2pc (char *str)
 	//while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 }
 
-
+void start_up_routine ()
+{
+	while (final_data[0]!='D')
+	{
+		to_pc('R');
+	}
+}
 
 
 int main (void)
@@ -528,12 +534,10 @@ int main (void)
 							recieved_Y=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
 							send_Byte_0('1');
 							_delay_ms(100);
-							
 							check++;
 						break;
 					}
 				}
-				to_pc(final_data);
 				data_bytes_recieved=0;
 				if ((check==0)||(check>2))
 				{
@@ -543,14 +547,19 @@ int main (void)
 				{
 					check=0;
 				}
-				
-			}
-				//snprintf(buffer,50,"G0 X%d Y000 Z150 F1000\n",recieved_X);
 				snprintf(buffer,30,"G0 X%d Y%d Z150 F1000\n",recieved_X/3.3,recieved_Y/2.47);
-				write_zahl(2,0,recieved_X,4,0,0);
-				write_zahl(3,0,recieved_Y,4,0,0);
+				_delay_ms(2000);
+				write_zahl(2,0,recieved_X/3.3,4,0,0);
+				write_zahl(3,0,recieved_Y/2.47,4,0,0);
 				send_to_uArm(buffer);
-		//}
+				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
+				{
+					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+				}
+				send_Byte_0('1');
+			}
+		
+		
 		alt=neu;
 	} //end while(1)
 } //end main

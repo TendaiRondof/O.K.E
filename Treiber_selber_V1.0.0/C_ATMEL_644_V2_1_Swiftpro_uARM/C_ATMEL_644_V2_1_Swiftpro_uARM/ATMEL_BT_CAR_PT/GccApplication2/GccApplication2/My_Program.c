@@ -490,14 +490,10 @@ int main (void)
 	unsigned char data_1;
 	unsigned char data_2;
 	unsigned char data_3;
-	unsigned char x1;
-	unsigned char y1;
-	unsigned char z1;
 	unsigned char alt=0;
 	unsigned char neu=0;
-	unsigned int recieved_X;
-	unsigned int recieved_Y;
-	unsigned int recieved_Z;
+	int recieved_X; 
+	int recieved_Y;
 	unsigned char buffer [30];
 	unsigned char check=0;
 	unsigned char counter=0;
@@ -509,7 +505,11 @@ int main (void)
 		taster = get_LCD_Taster();
 		if (taster&0x08)
 		{
-			send_to_uArm("G0 X170 Y0 Z160 F1000\n");			//ausgansgpkt
+			send_to_uArm("G0 X200 Y0 Z100 F1000\n");			//ausgansgpkt	(200 0 150)
+		}
+		if (taster&0x04)
+		{
+			send_to_uArm("G0 X200 Y-50 Z150 F1000\n");
 		}
 		write_zahl(0,0,taster,3,0,0);
 		write_zahl(1,0,check,3,0,0);
@@ -547,14 +547,23 @@ int main (void)
 				{
 					check=0;
 				}
-				snprintf(buffer,30,"G0 X%d Y%d Z150 F1000\n",recieved_X/3.3,recieved_Y/2.47);
+				
+				write_zahl(2,10,recieved_X,4,0,0);
+				write_zahl(3,10,recieved_Y,4,0,0);
+				recieved_X-=512;
+				recieved_Y-=384;
+				
+				recieved_X=(recieved_X/3.3)+200;
+				recieved_Y=recieved_Y/2.47;
+				snprintf(buffer,30,"G0 X%d Y%d Z150 F1000\n",recieved_X,recieved_Y);
 				_delay_ms(2000);
-				write_zahl(2,0,recieved_X/3.3,4,0,0);
-				write_zahl(3,0,recieved_Y/2.47,4,0,0);
+				write_zahl(2,0,recieved_X,4,0,0);
+				write_zahl(3,0,recieved_Y,4,0,0);
 				send_to_uArm(buffer);
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+					write_zahl(0,10,uart_string[4],4,0,0);
 				}
 				send_Byte_0('1');
 			}

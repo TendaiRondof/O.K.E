@@ -19,8 +19,11 @@
 #include "BT_CAR_V2_0.h"
 #include <avr/pgmspace.h>							// Ermöglicht die Platzierung von "static const" im Code-Segment, statt im RAM.
 													// Definition mit "PROGMEM", Lesen mit "pgm_read_byte, pgm_read_ptr"
-#include <avr/delay.h>
-#define F_CPU 16000000												
+//#include <avr/delay.h>
+//#define F_CPU 16000000	
+
+#define F_CPU 16000000UL
+#include <util/delay.h>											
 																			
 #pragma GCC optimize 0								// Optimierung ausschalten, damit das Debugging möglich ist
 u8 Receive_count=0,i=0;
@@ -497,78 +500,112 @@ int main (void)
 	unsigned char buffer [30];
 	unsigned char check=0;
 	unsigned char counter=0;
-	
+	unsigned char routine_done=0;
 	clear_lcd();
 	while(1)
 	{
 	//	direction=get_direction();
 		taster = get_LCD_Taster();
+		DIP_Switch=get_DIP_Switch();
+		
 		if (taster&0x08)
 		{
-			send_to_uArm("G0 X200 Y0 Z100 F1000\n");			//ausgansgpkt	(200 0 150)
-		}
-		if (taster&0x04)
-		{
-			send_to_uArm("G0 X200 Y-50 Z150 F1000\n");
-		}
-		write_zahl(0,0,taster,3,0,0);
-		write_zahl(1,0,check,3,0,0);
-			if (uart_str_complete!=0)
+			send_to_uArm("G0 X200 Y0 Z150 F1000\n");			//ausgansgpkt	(200 0 150)
+			while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 			{
-				uart_str_complete=0;
-				send_Byte_0('1');
-				_delay_ms(100);
-				
-				for (counter=0;counter<=data_bytes_recieved;counter++)
+				to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+				//write_zahl(0,10,uart_string[4],4,0,0);
+			}
+			//to_uARM("M2210 F2000 T200\n");
+			to_uARM("M2210 F500 T100\n");
+			_delay_ms(100);
+			to_uARM("M2210 F1000 T200\n");
+			_delay_ms(200);
+			to_uARM("M2210 F2000 T500\n");
+		}
+		if (uart_str_complete!=0)
+		{
+			routine_done=0;
+			PORTB|=0x01;
+			uart_str_complete=0;
+			send_Byte_0('1');
+			_delay_ms(100);	
+			for (counter=0;counter<=data_bytes_recieved;counter++)
+			{
+				switch (final_data[counter])//final data decoding
 				{
-					switch (final_data[counter])//final data decoding
-					{
-						case 'X':
-							recieved_X=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
-							send_Byte_0('1');
-							_delay_ms(100);
-							check++;
-						break;
+					case 'X':
+						recieved_Y=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
+						send_Byte_0('1');
+						_delay_ms(100);
+						check++;
+					break;
 				
-						case 'Y':
-							recieved_Y=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
-							send_Byte_0('1');
-							_delay_ms(100);
-							check++;
-						break;
-					}
+					case 'Y':
+						recieved_X=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
+						send_Byte_0('1');
+						_delay_ms(100);
+						check++;
+					break;
+						
+					case 'O':
+					routine_done=1;
+					check++;	
 				}
-				data_bytes_recieved=0;
-				if ((check==0)||(check>2))
+			}
+			data_bytes_recieved=0;
+			if ((check==0)||(check>2))
+			{
+				send_Byte_0('0');
+			}
+			else
+			{
+				check=0;
+			}
+			if (routine_done>=1)
+			{
+				send_to_uArm("G0 X200 Y0 Z150 F1000\n");
+				routine_done=0;
+				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
-					send_Byte_0('0');
+					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+					
 				}
-				else
+				to_uARM("M2210 F500 T100\n");
+				to_uARM("M2210 F1000 T200\n");
+				to_uARM("M2210 F2000 T500\n");
+				//send_Byte_0('1');
+				PORTB&=~0x01;
+			}
+			else
+			{
+				if (DIP_Switch&0x80)
 				{
-					check=0;
+					write_zahl(2,10,recieved_X,4,0,0);
+					write_zahl(3,10,recieved_Y,4,0,0);
 				}
-				
-				write_zahl(2,10,recieved_X,4,0,0);
-				write_zahl(3,10,recieved_Y,4,0,0);
-				recieved_X-=512;
-				recieved_Y-=384;
-				
-				recieved_X=(recieved_X/3.3)+200;
-				recieved_Y=recieved_Y/2.47;
-				snprintf(buffer,30,"G0 X%d Y%d Z150 F1000\n",recieved_X,recieved_Y);
-				_delay_ms(2000);
-				write_zahl(2,0,recieved_X,4,0,0);
-				write_zahl(3,0,recieved_Y,4,0,0);
+					
+				recieved_X-=384;
+				recieved_Y-=512;				
+				recieved_X=((recieved_X/5)*-1)+200;
+				recieved_Y=(recieved_Y/5)*-1;				
+				snprintf(buffer,30,"G0 X%d Y%d Z-30 F6000\n",recieved_X,recieved_Y);
+				if (DIP_Switch&0x80)
+				{
+					write_zahl(2,0,recieved_X,4,0,0);
+					write_zahl(3,0,recieved_Y,4,0,0);
+				}
 				send_to_uArm(buffer);
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 					write_zahl(0,10,uart_string[4],4,0,0);
 				}
+				to_uARM("M2210 F2000 T200\n");
 				send_Byte_0('1');
-			}
-		
-		
+				PORTB&=~0x01;
+			}	
+		}
 		alt=neu;
 	} //end while(1)
 } //end main

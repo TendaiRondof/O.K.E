@@ -1,15 +1,7 @@
-/*************************************************************************** 
-    MSW-Winterthur Berufsfachschule, Zeughausstrasse 56, 8400 Winterthur     
-    ---------------------------------------------------------------------    
-	Bluetooth CAR V21
-    Datum       : 7.7.2015
-    Version		: 2.1
-    Beschreibung: Demo Projekt für das Board BT_CAR_V21, Microprozessor TMEL644PA
-    Autor  		: Peter Trüb, LCD Treiber Christian Riedel
-
-****************************************************************************/
-
-//snprintf(test,100,"G2204 X%d Y10 Z10 F1000\n",45);
+/*
+O.K.E
+by Tendai und Jan
+*/
 
 #include <avr/io.h>
 #include <stdio.h>
@@ -18,21 +10,11 @@
 #include <avr/interrupt.h>
 #include "BT_CAR_V2_0.h"
 #include <avr/pgmspace.h>							// Ermöglicht die Platzierung von "static const" im Code-Segment, statt im RAM.
-													// Definition mit "PROGMEM", Lesen mit "pgm_read_byte, pgm_read_ptr"
-//#include <avr/delay.h>
-//#define F_CPU 16000000	
-
+													// Definition mit "PROGMEM", Lesen mit "pgm_read_byte, pgm_read_ptr"	
 #define F_CPU 16000000UL
 #include <util/delay.h>											
 																			
 #pragma GCC optimize 0								// Optimierung ausschalten, damit das Debugging möglich ist
-u8 Receive_count=0,i=0;
-
-char trennzeichen[] = " ";
-char *ptr_Abschnitt;
-int x_Koordinate,y_Koordinate,x_tmp,y_tmp,alt_x_tmp,alt_y_tmp,z_Koordinate,speed=10000;
-u8 DIP_Switch=0, LCD_Taster=0, k=0,m=0;
-u16 x_Wert_ADC,y_Wert_ADC;
 
 #define UART_MAXSTELLEN 50
 #define LEFT			1
@@ -42,20 +24,12 @@ u16 x_Wert_ADC,y_Wert_ADC;
 #define BACKWARD		5
 #define FORWARD			6
 
-
-
-
-typedef enum
-{
-	gagunggi,
-	CASE1,
-	CASE2,
-	CASE3,
-	CASE4,
-	MOVE_PROTOTYPE_5,
-} color;
-
-
+u8 Receive_count=0,i=0;
+char trennzeichen[] = " ";
+char *ptr_Abschnitt;
+int x_Koordinate,y_Koordinate,x_tmp,y_tmp,alt_x_tmp,alt_y_tmp,z_Koordinate,speed=10000;
+u8 DIP_Switch=0, LCD_Taster=0, k=0,m=0;
+u16 x_Wert_ADC,y_Wert_ADC;
 u8 uart_str_complete = 0;     // 1 --> String komplett empfangen
 u8 uart_str_complete1 = 0;     // 1 --> String komplett empfangen
 unsigned char data_bytes_recieved=0;
@@ -67,7 +41,6 @@ char uart_string1[UART_MAXSTELLEN + 1] = "";
 char uart_string_send1[UART_MAXSTELLEN + 1] = "";
 unsigned char data [12];
 unsigned char final_data[12];
-
 
 u8 get_DIP_Switch(void)
 {
@@ -345,45 +318,6 @@ ISR (USART1_RX_vect)
 	}
 }
 
-void get_tecnical_data (unsigned char data_request)
-{
-	switch (data_request)
-	{
-		case 0x01:	//get_angles of joints
-			send_to_uArm("P2200\n");
-		break;
-		
-		case 0x02:	//get_devicename
-			send_to_uArm("P2201\n");		
-		break;
-		
-		case 0x03:	//get hardware version
-			send_to_uArm("P2202\n");
-		break;
-		
-		case 0x04:	//get softwareversion
-			send_to_uArm("P2203\n");
-		break;
-		
-		case 0x05:	//get API version
-			send_to_uArm("P2204\n");
-		break;
-		
-		case 0x06:	//get UID
-			send_to_uArm("P2205\n");
-		break;
-		
-		case 0x07:	//get current coordinates
-			send_to_uArm("P2220\n");
-		break;
-		
-		case 0x08:	//check status
-		send_to_uArm("P2400\n");
-		break;
-		
-	}
-}
-
 void move (unsigned char direction, int amount)
 {
 	
@@ -427,13 +361,6 @@ void move (unsigned char direction, int amount)
 	}
 }
 
-void setup_bt ()
-{
-	to_uARM("M2234 V1\n");
-	to_uARM("M2245 GUGUSELI\n");
-	
-}
-
 unsigned char get_direction()
 {
 	unsigned int x;
@@ -463,50 +390,110 @@ unsigned char get_direction()
 	}
 }
 
-void back2pc (char *str)
-{
-	to_pc(str);
-	//to_pc("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-	//while(uart_string1[4] == 0x31) //ASCII '1' --> moving
-}
-
 void start_up_routine ()
 {
-	while (final_data[0]!='D')
-	{
-		to_pc('R');
-	}
-}
-
-
-int main (void)
-{
-	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert	
-	wait_1ms(1000);	
-	clear_lcd();				// LCD clear
+	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert
+	wait_1ms(1000);
 	init_ADC();
 	init_UART0();
 	init_UART1();
+	wait_1ms(1000);
+	//while (final_data[0]!='D')
+	//{
+	//	to_pc('R');
+	//}
+	
+	to_uARM("M2210 F500 T200\n");
+	_delay_ms(200);
+	to_uARM("M2210 F1000 T500\n");
+	_delay_ms(500);
+	to_uARM("M2210 F2000 T500\n");
+	clear_lcd();
+}
+
+int main (void)
+{
+	start_up_routine();
 	unsigned char taster;
-	int i;
-	unsigned char direction;
-	unsigned char data_1;
-	unsigned char data_2;
-	unsigned char data_3;
-	unsigned char alt=0;
-	unsigned char neu=0;
+	//unsigned char direction;
 	int recieved_X; 
 	int recieved_Y;
 	unsigned char buffer [30];
 	unsigned char check=0;
 	unsigned char counter=0;
 	unsigned char routine_done=0;
-	clear_lcd();
+	unsigned int sound[14]={262,277,294,311,330,349,370,392,415,440,466,494,523,0};
+	unsigned char music[50]={0,0,2,2,0,0,5,5,4,4,4,4,0,0,2,2,0,0,7,7,5,5,5,5,0,0,12,12,9,9,5,5,4,4,2,2,10,10,9,9,5,5,7,7,5,5,5,5,5,5};
+	unsigned char sound_buffer[20];
+	unsigned int tone;
+	
 	while(1)
 	{
 	//	direction=get_direction();
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
+		if ((DIP_Switch&0x01)&&(taster&0x01))
+		{
+			//for (int i; i<=50; i++)
+			//{
+				//tone=sound[music[i]];
+				//snprintf(sound_buffer,30,"M2210 F%d T250\n",tone);
+				//to_uARM(sound_buffer);
+				//_delay_ms(249);
+			//}
+			to_uARM("M2210 F660 T100\n");
+			_delay_ms(250);
+			to_uARM("M2210 F660 T100\n");
+			_delay_ms(400);
+			to_uARM("M2210 F660 T100\n");
+			_delay_ms(400);
+			to_uARM("M2210 F510 T100\n");
+			_delay_ms(200);
+			to_uARM("M2210 F660 T100\n");
+			_delay_ms(400);
+			to_uARM("M2210 F770 T100\n");
+			_delay_ms(650);
+			to_uARM("M2210 F380 T100\n");
+			_delay_ms(675);
+			
+			
+			to_uARM("M2210 F510 T100\n");
+			_delay_ms(550);
+			to_uARM("M2210 F380 T100\n");
+			_delay_ms(500);
+			to_uARM("M2210 F320 T100\n");
+			_delay_ms(600);
+			to_uARM("M2210 F440 T100\n");
+			_delay_ms(400);
+			to_uARM("M2210 F480 T80\n");
+			_delay_ms(410);
+			to_uARM("M2210 F450 T100\n");
+			_delay_ms(250);
+			to_uARM("M2210 F430 T100\n");
+			_delay_ms(400);
+			to_uARM("M2210 F380 T100\n");
+			_delay_ms(300);
+			to_uARM("M2210 F660 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F760 T50\n");
+			_delay_ms(150);
+			to_uARM("M2210 F860 T100\n");
+			_delay_ms(150);
+			to_uARM("M2210 F700 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F760 T50\n");
+			_delay_ms(150);
+			to_uARM("M2210 F660 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F520 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F580 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F480 T80\n");
+			_delay_ms(150);
+			
+			
+		}
 		
 		if (taster&0x08)
 		{
@@ -514,14 +501,16 @@ int main (void)
 			while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 			{
 				to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-				//write_zahl(0,10,uart_string[4],4,0,0);
 			}
 			//to_uARM("M2210 F2000 T200\n");
-			to_uARM("M2210 F500 T100\n");
-			_delay_ms(100);
-			to_uARM("M2210 F1000 T200\n");
-			_delay_ms(200);
-			to_uARM("M2210 F2000 T500\n");
+			if (DIP_Switch&0x01)
+			{
+				to_uARM("M2210 F500 T200\n");
+				_delay_ms(200);
+				to_uARM("M2210 F1000 T500\n");
+				_delay_ms(500);
+				to_uARM("M2210 F2000 T500\n");
+			}
 		}
 		if (uart_str_complete!=0)
 		{
@@ -569,12 +558,15 @@ int main (void)
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-					
 				}
-				to_uARM("M2210 F500 T100\n");
-				to_uARM("M2210 F1000 T200\n");
-				to_uARM("M2210 F2000 T500\n");
-				//send_Byte_0('1');
+				if (DIP_Switch&0x01)
+				{
+					to_uARM("M2210 F500 T200\n");
+					_delay_ms(200);
+					to_uARM("M2210 F1000 T500\n");
+					_delay_ms(500);
+					to_uARM("M2210 F2000 T500\n");
+				}
 				PORTB&=~0x01;
 			}
 			else
@@ -583,13 +575,12 @@ int main (void)
 				{
 					write_zahl(2,10,recieved_X,4,0,0);
 					write_zahl(3,10,recieved_Y,4,0,0);
-				}
-					
+				}	
 				recieved_X-=384;
 				recieved_Y-=512;				
 				recieved_X=((recieved_X/5)*-1)+200;
 				recieved_Y=(recieved_Y/5)*-1;				
-				snprintf(buffer,30,"G0 X%d Y%d Z-30 F6000\n",recieved_X,recieved_Y);
+				snprintf(buffer,30,"G0 X%d Y%d Z0 F6000\n",recieved_X,recieved_Y);
 				if (DIP_Switch&0x80)
 				{
 					write_zahl(2,0,recieved_X,4,0,0);
@@ -601,12 +592,14 @@ int main (void)
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 					write_zahl(0,10,uart_string[4],4,0,0);
 				}
-				to_uARM("M2210 F2000 T200\n");
+				if (DIP_Switch&0x01)
+				{
+					to_uARM("M2210 F2000 T200\n");
+				}
 				send_Byte_0('1');
 				PORTB&=~0x01;
 			}	
 		}
-		alt=neu;
 	} //end while(1)
 } //end main
 

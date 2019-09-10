@@ -434,65 +434,110 @@ int main (void)
 		DIP_Switch=get_DIP_Switch();
 		if ((DIP_Switch&0x01)&&(taster&0x01))
 		{
-			//for (int i; i<=50; i++)
-			//{
-				//tone=sound[music[i]];
-				//snprintf(sound_buffer,30,"M2210 F%d T250\n",tone);
-				//to_uARM(sound_buffer);
-				//_delay_ms(249);
-			//}
 			to_uARM("M2210 F660 T100\n");
-			_delay_ms(250);
+			_delay_ms(150);
 			to_uARM("M2210 F660 T100\n");
-			_delay_ms(400);
+			_delay_ms(300);
 			to_uARM("M2210 F660 T100\n");
-			_delay_ms(400);
+			_delay_ms(300);
 			to_uARM("M2210 F510 T100\n");
-			_delay_ms(200);
+			_delay_ms(100);
 			to_uARM("M2210 F660 T100\n");
-			_delay_ms(400);
+			_delay_ms(300);
 			to_uARM("M2210 F770 T100\n");
-			_delay_ms(650);
-			to_uARM("M2210 F380 T100\n");
-			_delay_ms(675);
-			
-			
-			to_uARM("M2210 F510 T100\n");
 			_delay_ms(550);
 			to_uARM("M2210 F380 T100\n");
-			_delay_ms(500);
-			to_uARM("M2210 F320 T100\n");
-			_delay_ms(600);
-			to_uARM("M2210 F440 T100\n");
-			_delay_ms(400);
-			to_uARM("M2210 F480 T80\n");
-			_delay_ms(410);
-			to_uARM("M2210 F450 T100\n");
-			_delay_ms(250);
-			to_uARM("M2210 F430 T100\n");
-			_delay_ms(400);
+			_delay_ms(575);
+			
+			
+			to_uARM("M2210 F510 T100\n");
+			_delay_ms(450);
 			to_uARM("M2210 F380 T100\n");
+			_delay_ms(400);
+			to_uARM("M2210 F320 T100\n");
+			_delay_ms(500);
+			to_uARM("M2210 F440 T100\n");
 			_delay_ms(300);
-			to_uARM("M2210 F660 T80\n");
+			to_uARM("M2210 F480 T80\n");
+			_delay_ms(330);
+			to_uARM("M2210 F450 T100\n");
 			_delay_ms(150);
+			to_uARM("M2210 F430 T100\n");
+			_delay_ms(300);
+			to_uARM("M2210 F380 T100\n");
+			_delay_ms(200);
+			to_uARM("M2210 F660 T80\n");
+			_delay_ms(200);
 			to_uARM("M2210 F760 T50\n");
 			_delay_ms(150);
 			to_uARM("M2210 F860 T100\n");
-			_delay_ms(150);
+			_delay_ms(300);
 			to_uARM("M2210 F700 T80\n");
 			_delay_ms(150);
 			to_uARM("M2210 F760 T50\n");
-			_delay_ms(150);
+			_delay_ms(350);
 			to_uARM("M2210 F660 T80\n");
-			_delay_ms(150);
+			_delay_ms(300);
 			to_uARM("M2210 F520 T80\n");
 			_delay_ms(150);
 			to_uARM("M2210 F580 T80\n");
 			_delay_ms(150);
 			to_uARM("M2210 F480 T80\n");
+			_delay_ms(500);
+			
+			to_uARM("M2210 F510 T100\n");
+			_delay_ms(450);
+			to_uARM("M2210 F380 T100\n");
+			_delay_ms(400);
+			to_uARM("M2210 F320 T100\n");
+			_delay_ms(500);
+			to_uARM("M2210 F440 T100\n");
+			_delay_ms(300);
+			to_uARM("M2210 F480 T80\n");
+			_delay_ms(330);
+			to_uARM("M2210 F450 T100\n");
 			_delay_ms(150);
-			
-			
+			to_uARM("M2210 F430 T100\n");
+			_delay_ms(300);
+			to_uARM("M2210 F380 T100\n");
+			_delay_ms(200);
+			to_uARM("M2210 F660 T80\n");
+			_delay_ms(200);
+			to_uARM("M2210 F760 T50\n");
+			_delay_ms(150);
+			to_uARM("M2210 F860 T100\n");
+			_delay_ms(300);
+			to_uARM("M2210 700 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F760 T50\n");
+			_delay_ms(350);
+			to_uARM("M2210 F660 T80\n");
+			_delay_ms(300);
+			to_uARM("M2210 F520 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F580 T80\n");
+			_delay_ms(150);
+			to_uARM("M2210 F480 T80\n");
+			_delay_ms(500);
+
+			to_uARM("M2210 F500 T100\n");
+			_delay_ms(300);
+
+			to_uARM("M2210 F760 T100\n");
+			_delay_ms(100);
+			to_uARM("M2210 F720 T100\n");
+			_delay_ms(150);
+			to_uARM("M2210 F680 T100\n");
+			_delay_ms(150);
+			to_uARM("M2210 F620 T150\n");
+			_delay_ms(300);
+
+			//to_uARM("M2210 F650 T150\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F380 T100\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F430 T100\n");
+			//_delay_ms(150);
 		}
 		
 		if (taster&0x08)
@@ -515,10 +560,8 @@ int main (void)
 		if (uart_str_complete!=0)
 		{
 			routine_done=0;
-			PORTB|=0x01;
 			uart_str_complete=0;
-			send_Byte_0('1');
-			_delay_ms(100);	
+			send_Byte_0('1');	
 			for (counter=0;counter<=data_bytes_recieved;counter++)
 			{
 				switch (final_data[counter])//final data decoding
@@ -526,14 +569,14 @@ int main (void)
 					case 'X':
 						recieved_Y=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
 						send_Byte_0('1');
-						_delay_ms(100);
+						_delay_ms(2);
 						check++;
 					break;
 				
 					case 'Y':
 						recieved_X=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
 						send_Byte_0('1');
-						_delay_ms(100);
+						_delay_ms(2);
 						check++;
 					break;
 						
@@ -567,7 +610,6 @@ int main (void)
 					_delay_ms(500);
 					to_uARM("M2210 F2000 T500\n");
 				}
-				PORTB&=~0x01;
 			}
 			else
 			{
@@ -576,11 +618,14 @@ int main (void)
 					write_zahl(2,10,recieved_X,4,0,0);
 					write_zahl(3,10,recieved_Y,4,0,0);
 				}	
+				//Grid anpassung
 				recieved_X-=384;
 				recieved_Y-=512;				
 				recieved_X=((recieved_X/5)*-1)+200;
-				recieved_Y=(recieved_Y/5)*-1;				
-				snprintf(buffer,30,"G0 X%d Y%d Z0 F6000\n",recieved_X,recieved_Y);
+				recieved_Y=(recieved_Y/5)*-1;	
+				////////////////
+							
+				snprintf(buffer,30,"G0 X%d Y%d Z-20 F6000\n",recieved_X,recieved_Y);
 				if (DIP_Switch&0x80)
 				{
 					write_zahl(2,0,recieved_X,4,0,0);
@@ -590,14 +635,13 @@ int main (void)
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-					write_zahl(0,10,uart_string[4],4,0,0);
+					
 				}
 				if (DIP_Switch&0x01)
 				{
 					to_uARM("M2210 F2000 T200\n");
 				}
 				send_Byte_0('1');
-				PORTB&=~0x01;
 			}	
 		}
 	} //end while(1)

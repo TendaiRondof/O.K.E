@@ -68,9 +68,9 @@ My_Program.d \
 BT_CAR_V2_0_LCD_Driver.d \
 BT_CAR_V2_0_HW_init_.d
 
-OUTPUT_FILE_PATH +=My_Project_6_2(1).elf
+OUTPUT_FILE_PATH +=My_Project.elf
 
-OUTPUT_FILE_PATH_AS_ARGS +=My_Project_6_2(1).elf
+OUTPUT_FILE_PATH_AS_ARGS +=My_Project.elf
 
 ADDITIONAL_DEPENDENCIES:=
 
@@ -121,13 +121,13 @@ all: $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
 $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP) $(LINKER_SCRIPT_DEP)
 	@echo Building target: $@
 	@echo Invoking: AVR/GNU Linker : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="My_Project_6_2(1).map" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,-L"E:\XE7\C_XE7_APP\C_XE7_Bluetooth\XE7_MyBTCar__Reverse_Querformat_1280x775_Bluetooth\ATMEL_644_V2_0\ATMEL_BT_CAR_PT\GccApplication2\GccApplication2"  -Wl,--gc-sections -mmcu=atmega644pa -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.150\gcc\dev\atmega644pa"  
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="My_Project.map" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,-L"E:\XE7\C_XE7_APP\C_XE7_Bluetooth\XE7_MyBTCar__Reverse_Querformat_1280x775_Bluetooth\ATMEL_644_V2_0\ATMEL_BT_CAR_PT\GccApplication2\GccApplication2"  -Wl,--gc-sections -mmcu=atmega644pa -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.150\gcc\dev\atmega644pa"  
 	@echo Finished building target: $@
-	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures  "My_Project_6_2(1).elf" "My_Project_6_2(1).hex"
-	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "My_Project_6_2(1).elf" "My_Project_6_2(1).eep" || exit 0
-	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objdump.exe" -h -S "My_Project_6_2(1).elf" > "My_Project_6_2(1).lss"
-	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O srec -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "My_Project_6_2(1).elf" "My_Project_6_2(1).srec"
-	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-size.exe" "My_Project_6_2(1).elf"
+	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures  "My_Project.elf" "My_Project.hex"
+	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "My_Project.elf" "My_Project.eep" || exit 0
+	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objdump.exe" -h -S "My_Project.elf" > "My_Project.lss"
+	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O srec -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "My_Project.elf" "My_Project.srec"
+	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-size.exe" "My_Project.elf"
 	
 	
 
@@ -139,5 +139,5 @@ $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP) $(LINKER
 clean:
 	-$(RM) $(OBJS_AS_ARGS) $(EXECUTABLES)  
 	-$(RM) $(C_DEPS_AS_ARGS)   
-	rm -rf "My_Project_6_2(1).elf" "My_Project_6_2(1).a" "My_Project_6_2(1).hex" "My_Project_6_2(1).lss" "My_Project_6_2(1).eep" "My_Project_6_2(1).map" "My_Project_6_2(1).srec" "My_Project_6_2(1).usersignatures"
+	rm -rf "My_Project.elf" "My_Project.a" "My_Project.hex" "My_Project.lss" "My_Project.eep" "My_Project.map" "My_Project.srec" "My_Project.usersignatures"
 	

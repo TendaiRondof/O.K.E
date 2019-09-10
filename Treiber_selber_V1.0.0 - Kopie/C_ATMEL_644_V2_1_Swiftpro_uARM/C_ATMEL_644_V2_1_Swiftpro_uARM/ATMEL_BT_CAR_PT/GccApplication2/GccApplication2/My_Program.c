@@ -12,11 +12,13 @@ by Tendai und Jan
 #include <avr/pgmspace.h>							// Ermöglicht die Platzierung von "static const" im Code-Segment, statt im RAM.
 													// Definition mit "PROGMEM", Lesen mit "pgm_read_byte, pgm_read_ptr"	
 #define F_CPU 16000000UL
-#include <util/delay.h>											
+#include <util/delay.h>	
+#include "light_ws2812.h"										
 																			
 #pragma GCC optimize 0								// Optimierung ausschalten, damit das Debugging möglich ist
 
 #define UART_MAXSTELLEN 50
+#define LED_AMOUNT		10
 #define LEFT			1
 #define RIGHT			2
 #define UP				3
@@ -426,6 +428,8 @@ int main (void)
 	unsigned char music[50]={0,0,2,2,0,0,5,5,4,4,4,4,0,0,2,2,0,0,7,7,5,5,5,5,0,0,12,12,9,9,5,5,4,4,2,2,10,10,9,9,5,5,7,7,5,5,5,5,5,5};
 	unsigned char sound_buffer[20];
 	unsigned int tone;
+	struct cRGB array[LED_AMOUNT];
+	ws2812_setleds(array,LED_AMOUNT);
 	
 	while(1)
 	{
@@ -635,6 +639,7 @@ int main (void)
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+					ws2812_sendarray(array,LED_AMOUNT);
 					
 				}
 				if (DIP_Switch&0x01)

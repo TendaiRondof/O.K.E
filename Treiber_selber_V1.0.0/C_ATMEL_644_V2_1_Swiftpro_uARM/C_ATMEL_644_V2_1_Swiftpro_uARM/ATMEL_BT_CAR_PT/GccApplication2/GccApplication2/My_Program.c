@@ -403,21 +403,16 @@ void start_up_routine ()
 	//	to_pc('R');
 	//}
 	
-	to_uARM("M2210 F500 T200\n");
-	_delay_ms(200);
-	to_uARM("M2210 F1000 T500\n");
-	_delay_ms(500);
-	to_uARM("M2210 F2000 T500\n");
-	clear_lcd();
 }
 
 int main (void)
 {
 	start_up_routine();
 	unsigned char taster;
-	//unsigned char direction;
+	unsigned char direction;
 	int recieved_X; 
 	int recieved_Y;
+	int Z=-20;
 	unsigned char buffer [30];
 	unsigned char check=0;
 	unsigned char counter=0;
@@ -426,123 +421,70 @@ int main (void)
 	unsigned char music[50]={0,0,2,2,0,0,5,5,4,4,4,4,0,0,2,2,0,0,7,7,5,5,5,5,0,0,12,12,9,9,5,5,4,4,2,2,10,10,9,9,5,5,7,7,5,5,5,5,5,5};
 	unsigned char sound_buffer[20];
 	unsigned int tone;
+	unsigned char start=0;
+	clear_lcd();
 	
+	to_uARM("M2210 F500 T20\n");
+	
+	_delay_ms(100);
+	send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
+	while(uart_string1[4] == 0x31) //ASCII '1' --> moving
+	{
+		to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+	}
+	to_uARM("M2210 F500 T200\n");
+	_delay_ms(200);
+	to_uARM("M2210 F1000 T500\n");
+	_delay_ms(500);
+	to_uARM("M2210 F2000 T500\n");
 	while(1)
 	{
 	//	direction=get_direction();
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
-		if ((DIP_Switch&0x01)&&(taster&0x01))
-		{
-			to_uARM("M2210 F660 T100\n");
-			_delay_ms(150);
-			to_uARM("M2210 F660 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F660 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F510 T100\n");
-			_delay_ms(100);
-			to_uARM("M2210 F660 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F770 T100\n");
-			_delay_ms(550);
-			to_uARM("M2210 F380 T100\n");
-			_delay_ms(575);
-			
-			
-			to_uARM("M2210 F510 T100\n");
-			_delay_ms(450);
-			to_uARM("M2210 F380 T100\n");
-			_delay_ms(400);
-			to_uARM("M2210 F320 T100\n");
-			_delay_ms(500);
-			to_uARM("M2210 F440 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F480 T80\n");
-			_delay_ms(330);
-			to_uARM("M2210 F450 T100\n");
-			_delay_ms(150);
-			to_uARM("M2210 F430 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F380 T100\n");
-			_delay_ms(200);
-			to_uARM("M2210 F660 T80\n");
-			_delay_ms(200);
-			to_uARM("M2210 F760 T50\n");
-			_delay_ms(150);
-			to_uARM("M2210 F860 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F700 T80\n");
-			_delay_ms(150);
-			to_uARM("M2210 F760 T50\n");
-			_delay_ms(350);
-			to_uARM("M2210 F660 T80\n");
-			_delay_ms(300);
-			to_uARM("M2210 F520 T80\n");
-			_delay_ms(150);
-			to_uARM("M2210 F580 T80\n");
-			_delay_ms(150);
-			to_uARM("M2210 F480 T80\n");
-			_delay_ms(500);
-			
-			to_uARM("M2210 F510 T100\n");
-			_delay_ms(450);
-			to_uARM("M2210 F380 T100\n");
-			_delay_ms(400);
-			to_uARM("M2210 F320 T100\n");
-			_delay_ms(500);
-			to_uARM("M2210 F440 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F480 T80\n");
-			_delay_ms(330);
-			to_uARM("M2210 F450 T100\n");
-			_delay_ms(150);
-			to_uARM("M2210 F430 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 F380 T100\n");
-			_delay_ms(200);
-			to_uARM("M2210 F660 T80\n");
-			_delay_ms(200);
-			to_uARM("M2210 F760 T50\n");
-			_delay_ms(150);
-			to_uARM("M2210 F860 T100\n");
-			_delay_ms(300);
-			to_uARM("M2210 700 T80\n");
-			_delay_ms(150);
-			to_uARM("M2210 F760 T50\n");
-			_delay_ms(350);
-			to_uARM("M2210 F660 T80\n");
-			_delay_ms(300);
-			to_uARM("M2210 F520 T80\n");
-			_delay_ms(150);
-			to_uARM("M2210 F580 T80\n");
-			_delay_ms(150);
-			to_uARM("M2210 F480 T80\n");
-			_delay_ms(500);
-
-			to_uARM("M2210 F500 T100\n");
-			_delay_ms(300);
-
-			to_uARM("M2210 F760 T100\n");
-			_delay_ms(100);
-			to_uARM("M2210 F720 T100\n");
-			_delay_ms(150);
-			to_uARM("M2210 F680 T100\n");
-			_delay_ms(150);
-			to_uARM("M2210 F620 T150\n");
-			_delay_ms(300);
-
-			//to_uARM("M2210 F650 T150\n");
-			//_delay_ms(300);
-			//to_uARM("M2210 F380 T100\n");
-			//_delay_ms(150);
-			//to_uARM("M2210 F430 T100\n");
-			//_delay_ms(150);
-		}
+		//if ((taster&0x60)&&(DIP_Switch&0x80)&&(DIP_Switch&0x01))
+		//{
+			//Z=-20;
+		//}
+		//if (DIP_Switch&0x60) // höhe einstellen
+		//{
+			//if (taster&0x02)
+			//{
+				//snprintf(buffer,30,"G0 X200 Y0 Z%d F3000\n",Z);
+				//send_to_uArm(buffer);
+				//start=1;
+			//}
+			//if (start)
+			//{
+				//direction=get_direction();
+				//if (direction==BACKWARD)
+				//{
+					//Z--;
+					//move(BACKWARD,1);
+				//}
+				//if (direction==FORWARD)
+				//{
+					//Z++;
+					//move(FORWARD,1);
+				//}
+				//write_zahl(0,1,Z,3,0,0);
+				//if (Z<0)
+				//{
+					////write_text(0,0,"-");
+				//}
+				//snprintf(buffer,30,"G0 X200 Y0 Z%d F600\n",Z);
+				//send_to_uArm(buffer);
+				//while(uart_string1[4] == 0x31) //ASCII '1' --> moving
+				//{
+					//to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+				//}
+			//}
+		//}
+		
 		
 		if (taster&0x08)
 		{
-			send_to_uArm("G0 X200 Y0 Z150 F1000\n");			//ausgansgpkt	(200 0 150)
+			send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
 			while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 			{
 				to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
@@ -596,7 +538,7 @@ int main (void)
 			}
 			if (routine_done>=1)
 			{
-				send_to_uArm("G0 X200 Y0 Z150 F1000\n");
+				send_to_uArm("G0 X200 Y0 Z150 F6000\n");
 				routine_done=0;
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
@@ -670,68 +612,113 @@ int main (void)
 	//	write_zahl(1,1,taster,4,0,0);	
 		
 		
-	/*	switch (DIP_Switch)
-		{
-			case CASE1:
-				if (taster&0x01)
-				{
-					move(UP,1);
-				}
-				if (taster&0x02)
-				{
-					move(DOWN,1);
-				}
-				if (taster&0x04)
-				{
-					//send_to_uArm("P2220\n");
-					x1=Get_uArm_Koordinate(1);
-					y1=Get_uArm_Koordinate(2);
-					z1=Get_uArm_Koordinate(3);
-					//XYZ_to_Display(50);
-				
-				}
-			break;
+	
 			
-			case CASE2:
-				if (neu>alt)
-				{
-					if (taster==0x01)
-					{
-						move(LEFT,1);
-					}	
-					if (taster==0x02)
-					{
-						move(BACKWARD,1);
-					}
+			
+			
+			
+			
+			
+			
+			//if ((DIP_Switch&0x01)&&(taster&0x01))
+		//	{
+				//to_uARM("M2210 F660 T100\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F660 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F660 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F510 T100\n");
+				//_delay_ms(100);
+				//to_uARM("M2210 F660 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F770 T100\n");
+				//_delay_ms(550);
+				//to_uARM("M2210 F380 T100\n");
+				//_delay_ms(575);
+				//
+				//
+				//to_uARM("M2210 F510 T100\n");
+				//_delay_ms(450);
+				//to_uARM("M2210 F380 T100\n");
+				//_delay_ms(400);
+				//to_uARM("M2210 F320 T100\n");
+				//_delay_ms(500);
+				//to_uARM("M2210 F440 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F480 T80\n");
+				//_delay_ms(330);
+				//to_uARM("M2210 F450 T100\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F430 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F380 T100\n");
+				//_delay_ms(200);
+				//to_uARM("M2210 F660 T80\n");
+				//_delay_ms(200);
+				//to_uARM("M2210 F760 T50\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F860 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F700 T80\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F760 T50\n");
+				//_delay_ms(350);
+				//to_uARM("M2210 F660 T80\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F520 T80\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F580 T80\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F480 T80\n");
+				//_delay_ms(500);
+				//
+				//to_uARM("M2210 F510 T100\n");
+				//_delay_ms(450);
+				//to_uARM("M2210 F380 T100\n");
+				//_delay_ms(400);
+				//to_uARM("M2210 F320 T100\n");
+				//_delay_ms(500);
+				//to_uARM("M2210 F440 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F480 T80\n");
+				//_delay_ms(330);
+				//to_uARM("M2210 F450 T100\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F430 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F380 T100\n");
+				//_delay_ms(200);
+				//to_uARM("M2210 F660 T80\n");
+				//_delay_ms(200);
+				//to_uARM("M2210 F760 T50\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F860 T100\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 700 T80\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F760 T50\n");
+				//_delay_ms(350);
+				//to_uARM("M2210 F660 T80\n");
+				//_delay_ms(300);
+				//to_uARM("M2210 F520 T80\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F580 T80\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F480 T80\n");
+				//_delay_ms(500);
+				//
+				//to_uARM("M2210 F500 T100\n");
+				//_delay_ms(300);
+				//
+				//to_uARM("M2210 F760 T100\n");
+				//_delay_ms(100);
+				//to_uARM("M2210 F720 T100\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F680 T100\n");
+				//_delay_ms(150);
+				//to_uARM("M2210 F620 T150\n");
+				//_delay_ms(300);
 
-					if (taster==0x04)
-					{
-						move(RIGHT,1);
-					}
-					if (taster==0x08)
-					{
-						move(FORWARD,1);
-					}				
-					//case default:
-					//send_to_uArm("G0 X200 Y0 Z150 F1000\n");
-					//break;
-				}
-			break;
-			
-			case CASE4:
-			if (taster&0x08)
-			{
-				send_to_uArm("G0 X170 Y0 Z160 F1000\n");			//ausgansgpkt
-				clear_lcd();
-			}
-			break;
-			case 5:
-			
-			
-			
-			
-			
-			
-			break;
-			*/
-			
+				
+		//	}

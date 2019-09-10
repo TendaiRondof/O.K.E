@@ -202,6 +202,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="light_ws2812.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="light_ws2812.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="My_Program.c">
       <SubType>compile</SubType>
     </Compile>

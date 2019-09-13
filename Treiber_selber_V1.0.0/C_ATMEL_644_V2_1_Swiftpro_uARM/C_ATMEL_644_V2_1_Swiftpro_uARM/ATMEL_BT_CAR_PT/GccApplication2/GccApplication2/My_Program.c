@@ -9,6 +9,7 @@ by Tendai und Jan
 #include <string.h>
 #include <avr/interrupt.h>
 #include "BT_CAR_V2_0.h"
+#include "light_ws2812.h"
 #include <avr/pgmspace.h>							// Ermöglicht die Platzierung von "static const" im Code-Segment, statt im RAM.
 													// Definition mit "PROGMEM", Lesen mit "pgm_read_byte, pgm_read_ptr"	
 #define F_CPU 16000000UL
@@ -23,6 +24,8 @@ by Tendai und Jan
 #define DOWN			4
 #define BACKWARD		5
 #define FORWARD			6
+#define MAX_RGBs 20
+#define COLORLENGTH 20
 
 u8 Receive_count=0,i=0;
 char trennzeichen[] = " ";
@@ -41,6 +44,8 @@ char uart_string1[UART_MAXSTELLEN + 1] = "";
 char uart_string_send1[UART_MAXSTELLEN + 1] = "";
 unsigned char data [12];
 unsigned char final_data[12];
+struct cRGB led[MAX_RGBs];
+
 
 u8 get_DIP_Switch(void)
 {
@@ -422,6 +427,8 @@ int main (void)
 	unsigned char sound_buffer[20];
 	unsigned int tone;
 	unsigned char start=0;
+	unsigned char head=0;
+	unsigned int d;
 	clear_lcd();
 	
 	to_uARM("M2210 F500 T20\n");
@@ -437,50 +444,44 @@ int main (void)
 	to_uARM("M2210 F1000 T500\n");
 	_delay_ms(500);
 	to_uARM("M2210 F2000 T500\n");
+
+led[0].r=0;
+led[0].g=255;
+led[0].b=0;
+led[1].r=0;
+led[1].g=0;
+led[1].b=255;
+ws2812_setleds(led,2);
 	while(1)
 	{
 	//	direction=get_direction();
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
-		//if ((taster&0x60)&&(DIP_Switch&0x80)&&(DIP_Switch&0x01))
+		//if (DIP_Switch&0x02)
 		//{
-			//Z=-20;
-		//}
-		//if (DIP_Switch&0x60) // höhe einstellen
-		//{
-			//if (taster&0x02)
+			//for (d=0; d<MAX_RGBs;d++)
 			//{
-				//snprintf(buffer,30,"G0 X200 Y0 Z%d F3000\n",Z);
-				//send_to_uArm(buffer);
-				//start=1;
-			//}
-			//if (start)
-			//{
-				//direction=get_direction();
-				//if (direction==BACKWARD)
+				//if (head==d)
 				//{
-					//Z--;
-					//move(BACKWARD,1);
+					//led[d].r=64;
+					//led[d].g=128;
+					//led[d].b=0;
 				//}
-				//if (direction==FORWARD)
+				//else
 				//{
-					//Z++;
-					//move(FORWARD,1);
-				//}
-				//write_zahl(0,1,Z,3,0,0);
-				//if (Z<0)
-				//{
-					////write_text(0,0,"-");
-				//}
-				//snprintf(buffer,30,"G0 X200 Y0 Z%d F600\n",Z);
-				//send_to_uArm(buffer);
-				//while(uart_string1[4] == 0x31) //ASCII '1' --> moving
-				//{
-					//to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+					//led[d].r=led[d].r/5;
+					//led[d].b=0;
+					//led[d].g=led[d].g/5;
 				//}
 			//}
+			//ws2812_setleds(led,MAX_RGBs); 
+			//_delay_ms(100);
+			//head++;
+			//if (head>=MAX_RGBs)
+			//{
+				//head=0;
+			//}
 		//}
-		
 		
 		if (taster&0x08)
 		{
@@ -576,12 +577,13 @@ int main (void)
 				send_to_uArm(buffer);
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
-					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 					
+					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 				}
 				if (DIP_Switch&0x01)
 				{
 					to_uARM("M2210 F2000 T200\n");
+					
 				}
 				send_Byte_0('1');
 			}	

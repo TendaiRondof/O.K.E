@@ -37,7 +37,6 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
-../light_ws2812.c \
 ../My_Program.c \
 ../BT_CAR_V2_0_LCD_Driver.c \
 ../BT_CAR_V2_0_HW_init_.c
@@ -50,25 +49,21 @@ ASM_SRCS +=
 
 
 OBJS +=  \
-light_ws2812.o \
 My_Program.o \
 BT_CAR_V2_0_LCD_Driver.o \
 BT_CAR_V2_0_HW_init_.o
 
 OBJS_AS_ARGS +=  \
-light_ws2812.o \
 My_Program.o \
 BT_CAR_V2_0_LCD_Driver.o \
 BT_CAR_V2_0_HW_init_.o
 
 C_DEPS +=  \
-light_ws2812.d \
 My_Program.d \
 BT_CAR_V2_0_LCD_Driver.d \
 BT_CAR_V2_0_HW_init_.d
 
 C_DEPS_AS_ARGS +=  \
-light_ws2812.d \
 My_Program.d \
 BT_CAR_V2_0_LCD_Driver.d \
 BT_CAR_V2_0_HW_init_.d
@@ -87,8 +82,6 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
-
-
 
 
 

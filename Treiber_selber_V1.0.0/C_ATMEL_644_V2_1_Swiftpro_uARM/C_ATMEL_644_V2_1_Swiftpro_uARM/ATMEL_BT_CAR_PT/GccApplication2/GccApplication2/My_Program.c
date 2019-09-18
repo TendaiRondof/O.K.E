@@ -9,7 +9,6 @@ by Tendai und Jan
 #include <string.h>
 #include <avr/interrupt.h>
 #include "BT_CAR_V2_0.h"
-#include "light_ws2812.h"
 #include <avr/pgmspace.h>							// Ermöglicht die Platzierung von "static const" im Code-Segment, statt im RAM.
 													// Definition mit "PROGMEM", Lesen mit "pgm_read_byte, pgm_read_ptr"	
 #define F_CPU 16000000UL
@@ -44,7 +43,8 @@ char uart_string1[UART_MAXSTELLEN + 1] = "";
 char uart_string_send1[UART_MAXSTELLEN + 1] = "";
 unsigned char data [12];
 unsigned char final_data[12];
-struct cRGB led[MAX_RGBs];
+unsigned char play_sound=0;
+
 
 
 u8 get_DIP_Switch(void)
@@ -280,11 +280,9 @@ int Get_uArm_Koordinate(char Achse)
 ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 {
 	unsigned char i;
-	unsigned char j=0;
   unsigned char nextChar;
   // Daten aus dem Puffer lesen
   nextChar = UDR0;
-  
   if( nextChar != '\n' && uart_str_count1 < UART_MAXSTELLEN)
   {
 	  data[data_bytes_recieved]=nextChar;
@@ -309,6 +307,7 @@ ISR (USART1_RX_vect)
 	nextChar = UDR1;
 	if( uart_str_complete1 == 0 )
 	{	// Daten werden erst in uart_string geschrieben, wenn nicht String-Ende/max Zeichenlänge erreicht ist/string gerade verarbeitet wird
+		
 		if( nextChar != '\n' && nextChar != '\r' && uart_str_count1 < UART_MAXSTELLEN)
 		{
 			uart_string1[uart_str_count1] = nextChar;
@@ -413,26 +412,19 @@ void start_up_routine ()
 int main (void)
 {
 	start_up_routine();
-	unsigned char taster;
-	unsigned char direction;
-	int recieved_X; 
-	int recieved_Y;
-	int Z=-20;
+	/*
+	check:	bit0 für überprüfung von eingehenden Daten (X)
+			bit1 für überprüfung von eingehenden Daten (Y)
+			bit2 für überprüfung ob job beendet ist	   (O)
+	*/
+	
+	unsigned char taster,direction,check,counter,routine_done;
+	int recieved_X,recieved_Y,Z; 
 	unsigned char buffer [30];
-	unsigned char check=0;
-	unsigned char counter=0;
-	unsigned char routine_done=0;
-	unsigned int sound[14]={262,277,294,311,330,349,370,392,415,440,466,494,523,0};
-	unsigned char music[50]={0,0,2,2,0,0,5,5,4,4,4,4,0,0,2,2,0,0,7,7,5,5,5,5,0,0,12,12,9,9,5,5,4,4,2,2,10,10,9,9,5,5,7,7,5,5,5,5,5,5};
-	unsigned char sound_buffer[20];
-	unsigned int tone;
-	unsigned char start=0;
-	unsigned char head=0;
-	unsigned int d;
+	//unsigned char music[50]={0,0,2,2,0,0,5,5,4,4,4,4,0,0,2,2,0,0,7,7,5,5,5,5,0,0,12,12,9,9,5,5,4,4,2,2,10,10,9,9,5,5,7,7,5,5,5,5,5,5};
+	//unsigned int sound[14]={262,277,294,311,330,349,370,392,415,440,466,494,523,0};
 	clear_lcd();
-	
 	to_uARM("M2210 F500 T20\n");
-	
 	_delay_ms(100);
 	send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
 	while(uart_string1[4] == 0x31) //ASCII '1' --> moving
@@ -445,44 +437,11 @@ int main (void)
 	_delay_ms(500);
 	to_uARM("M2210 F2000 T500\n");
 
-led[0].r=0;
-led[0].g=255;
-led[0].b=0;
-led[1].r=0;
-led[1].g=0;
-led[1].b=255;
-ws2812_setleds(led,2);
 	while(1)
 	{
 	//	direction=get_direction();
 		taster = get_LCD_Taster();
 		DIP_Switch=get_DIP_Switch();
-		//if (DIP_Switch&0x02)
-		//{
-			//for (d=0; d<MAX_RGBs;d++)
-			//{
-				//if (head==d)
-				//{
-					//led[d].r=64;
-					//led[d].g=128;
-					//led[d].b=0;
-				//}
-				//else
-				//{
-					//led[d].r=led[d].r/5;
-					//led[d].b=0;
-					//led[d].g=led[d].g/5;
-				//}
-			//}
-			//ws2812_setleds(led,MAX_RGBs); 
-			//_delay_ms(100);
-			//head++;
-			//if (head>=MAX_RGBs)
-			//{
-				//head=0;
-			//}
-		//}
-		
 		if (taster&0x08)
 		{
 			send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
@@ -490,7 +449,6 @@ ws2812_setleds(led,2);
 			{
 				to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 			}
-			//to_uARM("M2210 F2000 T200\n");
 			if (DIP_Switch&0x01)
 			{
 				to_uARM("M2210 F500 T200\n");
@@ -500,6 +458,7 @@ ws2812_setleds(led,2);
 				to_uARM("M2210 F2000 T500\n");
 			}
 		}
+		
 		if (uart_str_complete!=0)
 		{
 			routine_done=0;
@@ -510,42 +469,45 @@ ws2812_setleds(led,2);
 				switch (final_data[counter])//final data decoding
 				{
 					case 'X':
+						//filter data
 						recieved_Y=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
-						send_Byte_0('1');
+						send_Byte_0('1');	//return that data good
 						_delay_ms(2);
-						check++;
+						check++;		//check that data X good
 					break;
 				
 					case 'Y':
 						recieved_X=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
-						send_Byte_0('1');
-						_delay_ms(2);
+						send_Byte_0('1');	//return that data good
+						_delay_ms(2);		//check that data Y good
 						check++;
 					break;
 						
 					case 'O':
 					routine_done=1;
-					check++;	
+					check++;	//routine done
+					break;
+
 				}
 			}
 			data_bytes_recieved=0;
-			if ((check==0)||(check>2))
+			if ((check<=0)&&(check>2))
 			{
-				send_Byte_0('0');
+				send_Byte_0('0');	//return error
 			}
 			else
 			{
 				check=0;
 			}
-			if (routine_done>=1)
+			if (routine_done>=1) //if routine done
 			{
-				send_to_uArm("G0 X200 Y0 Z150 F6000\n");
+				send_to_uArm("G0 X200 Y0 Z150 F6000\n");	//back to start-position
 				routine_done=0;
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 				}
-				if (DIP_Switch&0x01)
+				if (DIP_Switch&0x01)		//denn macht er meis
 				{
 					to_uARM("M2210 F500 T200\n");
 					_delay_ms(200);
@@ -556,7 +518,7 @@ ws2812_setleds(led,2);
 			}
 			else
 			{
-				if (DIP_Switch&0x80)
+				if (DIP_Switch&0x80)		//displays data
 				{
 					write_zahl(2,10,recieved_X,4,0,0);
 					write_zahl(3,10,recieved_Y,4,0,0);
@@ -567,26 +529,26 @@ ws2812_setleds(led,2);
 				recieved_X=((recieved_X/5)*-1)+200;
 				recieved_Y=(recieved_Y/5)*-1;	
 				////////////////
-							
+				//form new string			
 				snprintf(buffer,30,"G0 X%d Y%d Z-20 F6000\n",recieved_X,recieved_Y);
-				if (DIP_Switch&0x80)
+				if (DIP_Switch&0x80)		//display new x/y calculated data
 				{
 					write_zahl(2,0,recieved_X,4,0,0);
 					write_zahl(3,0,recieved_Y,4,0,0);
 				}
-				send_to_uArm(buffer);
+				send_to_uArm(buffer);		//send new string
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
-					
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 				}
-				if (DIP_Switch&0x01)
+				if (DIP_Switch&0x01)	//macht wider meis wen er det isch
 				{
 					to_uARM("M2210 F2000 T200\n");
-					
 				}
-				send_Byte_0('1');
-			}	
+				
+				send_Byte_0('1');		//return that action done
+			}
+				
 		}
 	} //end while(1)
 } //end main
@@ -622,105 +584,93 @@ ws2812_setleds(led,2);
 			
 			
 			
-			//if ((DIP_Switch&0x01)&&(taster&0x01))
-		//	{
-				//to_uARM("M2210 F660 T100\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F660 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F660 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F510 T100\n");
-				//_delay_ms(100);
-				//to_uARM("M2210 F660 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F770 T100\n");
-				//_delay_ms(550);
-				//to_uARM("M2210 F380 T100\n");
-				//_delay_ms(575);
-				//
-				//
-				//to_uARM("M2210 F510 T100\n");
-				//_delay_ms(450);
-				//to_uARM("M2210 F380 T100\n");
-				//_delay_ms(400);
-				//to_uARM("M2210 F320 T100\n");
-				//_delay_ms(500);
-				//to_uARM("M2210 F440 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F480 T80\n");
-				//_delay_ms(330);
-				//to_uARM("M2210 F450 T100\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F430 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F380 T100\n");
-				//_delay_ms(200);
-				//to_uARM("M2210 F660 T80\n");
-				//_delay_ms(200);
-				//to_uARM("M2210 F760 T50\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F860 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F700 T80\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F760 T50\n");
-				//_delay_ms(350);
-				//to_uARM("M2210 F660 T80\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F520 T80\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F580 T80\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F480 T80\n");
-				//_delay_ms(500);
-				//
-				//to_uARM("M2210 F510 T100\n");
-				//_delay_ms(450);
-				//to_uARM("M2210 F380 T100\n");
-				//_delay_ms(400);
-				//to_uARM("M2210 F320 T100\n");
-				//_delay_ms(500);
-				//to_uARM("M2210 F440 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F480 T80\n");
-				//_delay_ms(330);
-				//to_uARM("M2210 F450 T100\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F430 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F380 T100\n");
-				//_delay_ms(200);
-				//to_uARM("M2210 F660 T80\n");
-				//_delay_ms(200);
-				//to_uARM("M2210 F760 T50\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F860 T100\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 700 T80\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F760 T50\n");
-				//_delay_ms(350);
-				//to_uARM("M2210 F660 T80\n");
-				//_delay_ms(300);
-				//to_uARM("M2210 F520 T80\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F580 T80\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F480 T80\n");
-				//_delay_ms(500);
-				//
-				//to_uARM("M2210 F500 T100\n");
-				//_delay_ms(300);
-				//
-				//to_uARM("M2210 F760 T100\n");
-				//_delay_ms(100);
-				//to_uARM("M2210 F720 T100\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F680 T100\n");
-				//_delay_ms(150);
-				//to_uARM("M2210 F620 T150\n");
-				//_delay_ms(300);
-
-				
-		//	}
+			//to_uARM("M2210 F510 T100\n");
+			//_delay_ms(450);
+			//to_uARM("M2210 F380 T100\n");
+			//_delay_ms(400);
+			//to_uARM("M2210 F320 T100\n");
+			//_delay_ms(500);
+			//to_uARM("M2210 F440 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F480 T80\n");
+			//_delay_ms(330);
+			//to_uARM("M2210 F450 T100\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F430 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F380 T100\n");
+			//_delay_ms(200);
+			//to_uARM("M2210 F660 T80\n");
+			//_delay_ms(200);
+			//to_uARM("M2210 F760 T50\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F860 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 700 T80\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F760 T50\n");
+			//_delay_ms(350);
+			//to_uARM("M2210 F660 T80\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F520 T80\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F580 T80\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F480 T80\n");
+			//_delay_ms(500);
+			//
+			//to_uARM("M2210 F500 T100\n");
+			//_delay_ms(3//if (play_sound==1)
+			//{
+			//to_uARM("M2210 F660 T100\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F660 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F660 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F510 T100\n");
+			//_delay_ms(100);
+			//to_uARM("M2210 F660 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F770 T100\n");
+			//_delay_ms(550);
+			//to_uARM("M2210 F380 T100\n");
+			//_delay_ms(575);
+			//
+			//
+			//to_uARM("M2210 F510 T100\n");
+			//_delay_ms(450);
+			//to_uARM("M2210 F380 T100\n");
+			//_delay_ms(400);
+			//to_uARM("M2210 F320 T100\n");
+			//_delay_ms(500);
+			//to_uARM("M2210 F440 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F480 T80\n");
+			//_delay_ms(330);
+			//to_uARM("M2210 F450 T100\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F430 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F380 T100\n");
+			//_delay_ms(200);
+			//to_uARM("M2210 F660 T80\n");
+			//_delay_ms(200);
+			//to_uARM("M2210 F760 T50\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F860 T100\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F700 T80\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F760 T50\n");
+			//_delay_ms(350);
+			//to_uARM("M2210 F660 T80\n");
+			//_delay_ms(300);
+			//to_uARM("M2210 F520 T80\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F580 T80\n");
+			//_delay_ms(150);
+			//to_uARM("M2210 F480 T80\n");
+			//_delay_ms(500);
+			//play_sound=0;
+			//}00);

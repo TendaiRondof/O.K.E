@@ -70,14 +70,42 @@ class GUI(tk.Tk):
     def set_take_shot(self):
         self.take_shot = not self.take_shot
 
+        if self.take_shot:
+            self.tk_shot_btn.configure(text="Analyzing...",bg="green")
+        else:
+            self.tk_shot_btn.configure(text="Analyze",bg=None)
+        self.update()
+
+    def show_image_in_tk(self,img):
+        img = cv2.resize(img,(480,360))
+        im = Image.fromarray(img)
+        imgtk = ImageTk.PhotoImage(image=im)
+        self.img_label.image = imgtk
+        self.img_label.configure(image=imgtk,text="")
+
+        self.update()
+
 
 
 class Application:
     def __init__(self):
         self.myGui = GUI()
+
+        self.myGui.img_label.configure(text="Init YOLO Manager...")
+        self.myGui.update()
+
         self.yolo = YOLO_Manager()
+
+        self.myGui.img_label.configure(text="Init Röbi...")
+        self.myGui.update()
         self.MCRobo = MCRoboarm("00:06:66:76:52:C3",1)
-        self.cam = cv2.VideoCapture(0)
+
+        self.myGui.img_label.configure(text="Init CAM...")
+        self.myGui.update()
+        self.cam = cv2.VideoCapture(1)
+
+        self.myGui.img_label.configure(text="Finish")
+        self.myGui.update()
 
     def analyze(self,img):
         boxes = self.yolo.analyze(img)
@@ -119,10 +147,10 @@ class Application:
             fin,succ = self.MCRobo.recieve()
             if not(succ and fin):
                 raise Exception("Socked Down")
-                
-            joint_img = self.take_pic()
+            
             sleep(1)
-            self.show_image_in_tk(joint_img)
+            joint_img = self.take_pic()
+            self.myGui.show_image_in_tk(joint_img)
             sleep(0.1)
             
             # use second AI
@@ -137,15 +165,6 @@ class Application:
         
         return img
     
-    def show_image_in_tk(self,img):
-        img = cv2.resize(img,(480,360))
-        im = Image.fromarray(img)
-        imgtk = ImageTk.PhotoImage(image=im)
-        self.myGui.img_label.configure(image=imgtk,text="")
-        self.myGui.img_label.image = imgtk
-
-        self.myGui.update()
-    
     def run(self):
         try:
             while True:
@@ -154,30 +173,21 @@ class Application:
 
                 if res:
                     #resize to worksize
-                    img = cv2.resize(img,(1024,768))
-                    img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                    img = self.take_pic()
                     
                     #if analysing initialized
                     if self.myGui.take_shot:
-                        self.myGui.tk_shot_btn.configure(text="Stop")
-                        
                         img,boxes = self.analyze(img)
+                        self.myGui.show_image_in_tk(img)
+                        self.myGui.tk_shot_btn.configure(text="Stop",bg="red")
                         
-                        self.show_image_in_tk(img)
-                        sleep(3)
+                        sleep(1)
                         self.analyze_joints(boxes)
                         while self.myGui.take_shot:
                             self.myGui.update()
                         
                     else:
-                        img = cv2.resize(img,(480,360))
-                        im = Image.fromarray(img)
-                        imgtk = ImageTk.PhotoImage(image=im)
-
-                        # Put it in the display window
-                        self.myGui.img_label.configure(image=imgtk,text="")
-                        self.myGui.img_label.image = imgtk
-                        self.myGui.tk_shot_btn.configure(text="Analyze")
+                        self.myGui.show_image_in_tk(img)
                 else:
                     self.myGui.img_label.configure(text="CAM ERROR!!!!!!")
                 

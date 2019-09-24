@@ -22,9 +22,16 @@
 
 #define DIP_SWITCH 8
 
-#define MAX_RGBs 60
-#define COLORLENGTH 60
+#define MAX_RGBs 79
+#define COLORLENGTH 79
 #define FADE 5
+
+#define ALL_OFF			0x50
+#define ROBO_ON_THE_RUN	0x30
+#define WAITING_FOR_FIRST_CMD	0x10
+//#define NULL
+#define FINISHED		0x20
+#define IDLE			0x40
 
 struct cRGB led[MAX_RGBs];
 struct cRGB colors[8];
@@ -56,6 +63,9 @@ u8 get_DIP_Switch(void)
 // --------------------------------------------------------------------------------------------------------------
 int main (void)
 {
+	unsigned char activated=0;
+	unsigned char activated2=MAX_RGBs/2;
+	unsigned char data;
 	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert
 	write_text(0,4, PSTR("RGB Strip DEMO!"));	
 	wait_1ms(1000);	
@@ -80,135 +90,229 @@ int main (void)
 
 	while(1)
 	{    
-
-		DIP_Switch=get_DIP_Switch();
-		switch(DIP_Switch)
+		
+		data=(PIND&0xF0);
+		write_zahl(1,0,data,3,0,0);
+		//DIP_Switch=get_DIP_Switch();
+		switch(data)
 		{
-			case 1: //Erste RGB Rot
-					led[0].r=255;
-					led[0].g=0;
-					led[0].b=0;
-					ws2812_setleds(led,1);
+			case ALL_OFF: //alle led aus
+			 for(i=MAX_RGBs; i>0; i--)
+			 {
+				 led[i-1].r=0;led[i-1].g=0;led[i-1].b=0;
+			 }
+			 ws2812_sendarray((uint8_t *)&led,MAX_RGBs*3); //Ausgabe des ganzen Arrays
+			 break;
 					break;
 			
-			case 2: //Erste RGB Grün, zweite Blau		
-					led[0].r=0;
-					led[0].g=255;
-					led[0].b=0;
-					led[1].r=0;
-					led[1].g=0;
-					led[1].b=255;
-					ws2812_setleds(led,2);
-					break;
+			case ROBO_ON_THE_RUN: //robo move		
+					for(i=0;i<MAX_RGBs;i++)
+					{
+						if ((i==activated)||(i==activated2))
+						{
+							led[i].r=255;
+							led[i].g=128;
+							led[i].b=0;
+						}
+						else
+						{
+							led[i].r=led[i].r/1.1;
+							led[i].g=led[i].g/1.1;
+							led[i].b=led[i].b/1.1;
+						}
+					}
+					if (activated>MAX_RGBs)
+					{
+						activated=0;
+					}
+					else
+					{
+						activated++;
+					}
+					if (activated2>MAX_RGBs)
+					{
+						activated2=0;
+					}
+					else
+					{
+						activated2++;
+					}
+					wait_1ms(50);
+					ws2812_setleds(led,MAX_RGBs);
+				break;
+					
+					
+			case WAITING_FOR_FIRST_CMD: //tendai rechne
+				for(i=0;i<MAX_RGBs;i++)
+				{
+					if ((i==activated)||(i==activated2))
+					{
+						led[i].r=255;
+						led[i].g=0;
+						led[i].b=0;
+					}
+					else
+					{
+						led[i].r=led[i].r/1.1;
+						led[i].g=led[i].g/1.1;
+						led[i].b=led[i].b/1.1;
+						//led[i].r-=10;
+						//led[i].g-=10;
+						//led[i].b-=10;
+					}
+				}
+				if (activated>MAX_RGBs)
+				{
+					activated=0;
+				}
+				else
+				{
+					activated++;
+				}
+				if (activated2>MAX_RGBs)
+				{
+					activated2=0;
+				}
+				else
+				{
+					activated2++;
+				}
+				wait_1ms(50);
+				ws2812_setleds(led,MAX_RGBs);
+			break;		
+					
 					
 			case 4: //Alle RGB's gelb 
-					for(i=MAX_RGBs; i>0; i--)
+					for(i=0;i<MAX_RGBs;i++)
 					{
-						led[i-1].r=55;led[i-1].g=55;led[i-1].b=0;
+						if ((i==activated)||(i==activated2))
+						{
+							led[i].r=255;
+							led[i].g=128;
+							led[i].b=0;
+						}
+						else
+						{
+							led[i].r=led[i].r/1.1;
+							led[i].g=led[i].g/1.1;
+							led[i].b=led[i].b/1.1;
+						}
 					}
-					ws2812_setleds(led,MAX_RGBs); //Daten an alle RGB's!
+					if (activated>MAX_RGBs)
+					{
+						activated=0;
+					}
+					else
+					{
+						activated++;
+					}
+					if (activated2>MAX_RGBs)
+					{
+						activated2=0;
+					}
+					else
+					{
+						activated2++;
+					}
+					wait_1ms(50);
+					ws2812_setleds(led,MAX_RGBs);
 					break;
 					
-			case 8: //Rotes Lauflicht für RGBs
-					for(i=MAX_RGBs; i>0; i--)
+			
+					
+			case FINISHED://Grünes Lauflicht für RGBs
+					for(i=0;i<MAX_RGBs;i++)
 					{
-						led[MAX_RGBs-i].r=255;led[MAX_RGBs-i].g=0;led[MAX_RGBs-i].b=0;
-						ws2812_setleds(led,MAX_RGBs);
-						led[MAX_RGBs-i].r=0;led[MAX_RGBs-i].g=0;led[MAX_RGBs-i].b=0;
-						wait_1ms(100);
+						if ((i==activated)||(i==activated2))
+						{
+							led[i].r=0;
+							led[i].g=255;
+							led[i].b=0;
+						}
+						else
+						{
+							led[i].r=led[i].r/1.1;
+							led[i].g=led[i].g/1.1;
+							led[i].b=led[i].b/1.1;
+						}
 					}
+					if (activated>MAX_RGBs)
+					{
+						activated=0;
+					}
+					else
+					{
+						activated++;
+					}
+					if (activated2>MAX_RGBs)
+					{
+						activated2=0;
+					}
+					else
+					{
+						activated2++;
+					}
+					wait_1ms(50);
+					ws2812_setleds(led,MAX_RGBs);
 					break;
 					
-			case 16://Grünes Lauflicht für RGBs
-					for(i=MAX_RGBs; i>0; i--)
+			case IDLE://Blaues Lauflicht für RGBs
+					for(i=0;i<MAX_RGBs;i++)
 					{
-						led[MAX_RGBs-i].r=0;led[MAX_RGBs-i].g=255;led[MAX_RGBs-i].b=0;
-						ws2812_setleds(led,MAX_RGBs);
-						led[MAX_RGBs-i].r=0;led[MAX_RGBs-i].g=0;led[MAX_RGBs-i].b=0;
-						wait_1ms(100);
+						if ((i==activated)||(i==activated2))
+						{
+							led[i].r=0;
+							led[i].g=0;
+							led[i].b=255;
+						}
+						else
+						{
+							led[i].r=led[i].r/1.1;
+							led[i].g=led[i].g/1.1;
+							led[i].b=led[i].b/1.1;
+						}
 					}
+					if (activated>MAX_RGBs)
+					{
+						activated=0;
+					}
+					else
+					{
+						activated++;
+					}
+					if (activated2>MAX_RGBs)
+					{
+						activated2=0;
+					}
+					else
+					{
+						activated2++;
+					}
+					wait_1ms(50);
+					ws2812_setleds(led,MAX_RGBs);
 					break;
 					
-			case 32://Blaues Lauflicht für RGBs
-					for(i=MAX_RGBs; i>0; i--)
-					{
-						led[MAX_RGBs-i].r=0;led[MAX_RGBs-i].g=0;led[MAX_RGBs-i].b=255;
-						ws2812_setleds(led,MAX_RGBs);
-						led[MAX_RGBs-i].r=0;led[MAX_RGBs-i].g=0;led[MAX_RGBs-i].b=0;
-						wait_1ms(100);
-					}
-					break;
+			//case 7:
+			//break;
 					
-			case 64://Rainbow Colors
-					//Rainbow Colors
-					//Farben ausserhalb while(1) definiert
-					//shift all values by one led
-					i=0;
-					for(i=(MAX_RGBs*3); i>1; i--)
-						led[i-1]=led[i-2];
-					//change colour when colourlength is reached
-					if(k>COLORLENGTH)
-					{
-						j++;
-						k=0;
-					}
-					k++;
-					//loop colors
-					if(j>8)
-						j=0;
-							
-					//fade red
-					if(led[0].r<colors[j].r)
-						led[0].r+=FADE;
-					if(led[0].r>255.r)
-						led[0].r=255;
-							
-					if(led[0].r>colors[j].r)
-						led[0].r-=FADE;
-					//if(led[0].r<0)
-					//led[0].r=0;
-					//fade green
-					if(led[0].g<colors[j].g)
-						led[0].g+=FADE;
-					if(led[0].g>255)
-						led[0].g=255;
-							
-					if(led[0].g>colors[j].g)
-						led[0].g-=FADE;
-					//if(led[0].g<0)
-					//led[0].g=0;
-					//fade blue
-					if(led[0].b<colors[j].b)
-						led[0].b+=FADE;
-					if(led[0].b>255)
-						led[0].b=255;
-							
-					if(led[0].b>colors[j].b)
-						led[0].b-=FADE;
-					//if(led[0].b<0)
-					//led[0].b=0;
-							
-					ws2812_sendarray((uint8_t *)&led, MAX_RGBs*3); //Daten an alle RGBs!			
-					wait_1ms(1);
-					break;
 					
-			case 128://Blitz
-					 //Zuerst alle RGBs schwach gelb
-					 for(i=MAX_RGBs; i>0; i--)
-					 {
-						 led[i-1].r=55;led[i-1].g=55;led[i-1].b=0;
-					 }
-					 ws2812_sendarray((uint8_t *)&led,MAX_RGBs*3); //Ausgabe des ganzen Arrays
-					 wait_1ms(1000);					 
-					 //Blitz bei RGB's 10 bis 20
-					 for(T=10;T<20;T++)
-					 {
-						 led[T].r=255;led[T].g=255;led[T].b=255;
-					 }
-					 //Erlaubt einen Arrayauschnitt auszugeben
-					 ws2812_sendarray((uint8_t *)&led,MAX_RGBs*3); //Ausgabe des ganzen Arrays
-					 wait_1ms(50);					 
-					 break;
+			//case 128://Blitz
+					 ////Zuerst alle RGBs schwach gelb
+					 //for(i=MAX_RGBs; i>0; i--)
+					 //{
+						 //led[i-1].r=55;led[i-1].g=55;led[i-1].b=0;
+					 //}
+					 //ws2812_sendarray((uint8_t *)&led,MAX_RGBs*3); //Ausgabe des ganzen Arrays
+					 //wait_1ms(1000);					 
+					 ////Blitz bei RGB's 10 bis 20
+					 //for(T=10;T<20;T++)
+					 //{
+						 //led[T].r=255;led[T].g=255;led[T].b=255;
+					 //}
+					 ////Erlaubt einen Arrayauschnitt auszugeben
+					 //ws2812_sendarray((uint8_t *)&led,MAX_RGBs*3); //Ausgabe des ganzen Arrays
+					 //wait_1ms(50);					 
+					 //break;
 					 
 			default: //Alle RGBs clear
 					 for(i=MAX_RGBs; i>0; i--)
@@ -219,5 +323,6 @@ int main (void)
 					 break;
 		}
 		write_zahl(3, 16,tick_1s,4,0,0);
+		write_zahl(0,0,DIP_Switch,3,0,0);
   }
 }

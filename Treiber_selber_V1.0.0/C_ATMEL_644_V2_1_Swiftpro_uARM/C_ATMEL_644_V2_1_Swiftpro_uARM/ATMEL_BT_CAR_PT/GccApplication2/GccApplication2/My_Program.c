@@ -23,28 +23,36 @@ by Tendai und Jan
 #define DOWN			4
 #define BACKWARD		5
 #define FORWARD			6
-#define MAX_RGBs 20
-#define COLORLENGTH 20
 #define NOTEAMOUNT		20
+#define DATA_LENGTH		4
 
-u8 Receive_count=0,i=0;
+
+#define ALL_OFF			0x50
+#define ROBO_ON_THE_RUN	0x30
+#define WAITING_FOR_FIRST_CMD	0x10
+//#define NULL
+#define FINISHED		0x20
+#define IDLE			0x40
+
+
+
 char trennzeichen[] = " ";
 char *ptr_Abschnitt;
-int x_Koordinate,y_Koordinate,x_tmp,y_tmp,alt_x_tmp,alt_y_tmp,z_Koordinate,speed=10000;
-u8 DIP_Switch=0, LCD_Taster=0, k=0,m=0;
+u8 DIP_Switch=0, LCD_Taster=0, k=0,m=0, Recieve_count,i=0;
 u16 x_Wert_ADC,y_Wert_ADC;
-u8 uart_str_complete = 0;     // 1 --> String komplett empfangen
-u8 uart_str_complete1 = 0;     // 1 --> String komplett empfangen
-unsigned char data_bytes_recieved=0;
-u8 uart_str_count = 0;
-u8 uart_str_count1 = 0;
+u8 uart_str_complete,uart_str_complete1 = 0;     // 1 --> String komplett empfangen
+u8 uart_str_count,uart_str_count1= 0;
 char uart_string[UART_MAXSTELLEN + 1] = "";
 char uart_string_send[UART_MAXSTELLEN + 1] = "";
 char uart_string1[UART_MAXSTELLEN + 1] = "";
 char uart_string_send1[UART_MAXSTELLEN + 1] = "";
 unsigned char data [12];
 unsigned char final_data[12];
-unsigned char play_sound=0;
+unsigned char play_sound,routine_done,good,false_state,data_bytes_recieved,pc_ready=0;
+unsigned int lol=0;
+unsigned char good,false_state=0;
+
+
 
 
 
@@ -67,8 +75,8 @@ u8 get_DIP_Switch(void)
 }
 u8 get_LCD_Taster(void)
 {
-	u8 LCD_Taster;
-	
+	u8 LCD_Taster,tmp;
+	tmp=PINB;
 	//Initialisierung Port B
 	PORTB &= 0xF0;			//4xNull ausgeben um Eingangskapazität zu "leeren", diese Pins werden im nächsten Befehl zu Eingängen umgeschaltet
 
@@ -86,6 +94,7 @@ u8 get_LCD_Taster(void)
 	LCD_Taster = PINB & 0x0F;
 	//Initialisierung Port B
 	DDRB  =  0xFF;			// jetzt wieder LED Port, alles Outputs
+	PORTB=tmp;
 	return(LCD_Taster);
 }
 void init_ADC(void)
@@ -133,27 +142,8 @@ void send_Byte_0(u8 val)
 void send_Byte_1(u8 val)
 {
 	//Wait for empty Buffer
-	while( !(UCSR1A & (1<<UDRE1)) )
-	;
-	
+	while( !(UCSR1A & (1<<UDRE1)));
 	UDR1=val;	//Transmit starts
-}
-void XYZ_to_Display(u16 Delay_LCD)
-{
-	uart_str_complete = 1;	//String für Änderungen blockieren!
-	clear_lcd();
-	ptr_Abschnitt = strtok(uart_string, trennzeichen);
-	while(ptr_Abschnitt != NULL)
-	{
-		write_text_ram(k, 0, ptr_Abschnitt); //Ausgabe Array
-		k++;
-		ptr_Abschnitt = strtok(NULL, trennzeichen);
-		//Jeder Aufruf gibt das Token zurück. Das Trennzeichen wird mit '\0' überschrieben.
-		//Die Schleife läuft durch bis strtok() den NULL-Zeiger zurückliefert.
-	}
-	k=0;
-	uart_str_complete = 0;
-	wait_1ms(Delay_LCD);
 }
 void to_pc (char *_str)
 {
@@ -176,7 +166,7 @@ void to_uARM(char *_str)
 		_str++;
 	}
 	uart_str_complete1 = 0; //String freigeben um Antwort zu empfangen
-	while (uart_str_complete1 == 0); //Warten bis Antwort erfolgt ist
+//	while (uart_str_complete1 == 0); //Warten bis Antwort erfolgt ist
 	//XYZ_to_Display(2000); //Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
 	//setzt dann uart_str_complete = 0
 
@@ -193,97 +183,71 @@ void send_to_uArm(char *str)
 	//XYZ_to_Display(0);	//Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
 						//setzt dann uart_str_complete = 0
 }
-void uArm_goto_xyz(int x, int y, int z, unsigned int speed)
-{
-	char x_string[6];
-	char y_string[6];
-	char z_string[6];
-	char speed_string[6];
-	
-	uart_string_send[0] = '\0';//WICHTIG!!!!!
-	itoa(x,x_string,10); //integer in String wandeln 10er System
-	itoa(y,y_string,10);
-	itoa(z,z_string,10);
-	itoa(speed,speed_string,10);	
-	strcat(uart_string_send,"G0 X"); //String verketten
-	strcat(uart_string_send,x_string);
-	strcat(uart_string_send," Y");
-	strcat(uart_string_send,y_string);
-	strcat(uart_string_send," Z");
-	strcat(uart_string_send,z_string);
-	strcat(uart_string_send," F");		
-	strcat(uart_string_send,speed_string);
-	strcat(uart_string_send,"\n");		
-	wait_1ms(100); //optional für ruhigere Bewegungen und LCD Display
-	send_to_uArm(uart_string_send);	
-}
-int Get_uArm_Koordinate(char Achse)
-{
-	double Wert_tmp;
-	int Wert;
-	
-	to_uARM("P2220\n"); //Koordinaten abfragen	
-	uart_str_complete = 1;	//String für Änderungen blockieren!
-	//clear_lcd();
-	ptr_Abschnitt = strtok(uart_string, trennzeichen);
-	k=0;
-	while(ptr_Abschnitt != NULL)
-	{
-		//write_text_ram(k, 0, ptr_Abschnitt); //Ausgabe Array
-		switch(Achse)
-		{
-			case 1:	if (k==1) //Abschnitt mit X
-						{
-							Wert_tmp=atof(++ptr_Abschnitt);//;atof(ptr_Abschnitt);
-							Wert=(int)(Wert_tmp);
-							return(Wert);
-						}
-						break;
-			case 2:	if (k==2) //Abschnitt mit Y
-						{
-							Wert_tmp=atof(++ptr_Abschnitt);//;atof(ptr_Abschnitt);
-							Wert=(int)(Wert_tmp);
-							return(Wert);
-						}
-						break;	
-			case 3:	if (k==3) //Abschnitt mit Z
-						{
-							Wert_tmp=atof(++ptr_Abschnitt);//;atof(ptr_Abschnitt);
-							Wert=(int)(Wert_tmp);
-							return(Wert);
-						}
-						break;
-			default:	break;																	
-		}
-		k++;
-		ptr_Abschnitt = strtok(NULL, trennzeichen);
-		//Jeder Aufruf gibt das Token zurück. Das Trennzeichen wird mit '\0' überschrieben.
-		//Die Schleife läuft durch bis strtok() den NULL-Zeiger zurückliefert.
-	}
-	k=0;
-	uart_str_complete = 0;
-	//wait_1ms(Delay_LCD);	
-}
 ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 {
-	unsigned char i;
-  unsigned char nextChar;
-  // Daten aus dem Puffer lesen
-  nextChar = UDR0;
-  if( nextChar != '\n' && uart_str_count1 < UART_MAXSTELLEN)
-  {
-	  data[data_bytes_recieved]=nextChar;
-	  data_bytes_recieved++;
-		//copy data to different array	88 48 49 55  	
-	} 
-	else
+	unsigned char nextChar;
+	nextChar = UDR0;
+	
+	switch(nextChar)
 	{
-		for (i=0;i<=data_bytes_recieved;i++)
-	{
-		final_data[i]=data[i];
-	}  
-	 uart_str_complete=1;
+		case 'A':
+			set_led_mode(ROBO_ON_THE_RUN);
+			to_uARM("G0 X200 Y0 Z-20 F6000\n");
+		break;
+		
+		case 'C':
+			set_led_mode(WAITING_FOR_FIRST_CMD);
+		break;
+		
+		case 'S':
+			set_led_mode(IDLE);
+		break;
+		
+		case '\n':
+			data_bytes_recieved = 0;
+			uart_str_complete=1;
+			break;
+			
+		case 'O':
+			set_led_mode(FINISHED);
+			start_nowait();
+			routine_done=1;
+		break;
+		
+		case 'G':
+			good=1;
+		break;
+		
+		case 'E':
+			false_state=1;
+		break;
+		
+		case 'D':
+			pc_ready=1;
+		break;
+		default:
+			PORTB|=0x01;
+			data[data_bytes_recieved]=nextChar;
+			data_bytes_recieved++;
+		break;
 	}
+	
+	
+  // Daten aus dem Puffer lesen
+  
+	//if( nextChar != '\n' && uart_str_count1 < UART_MAXSTELLEN)
+	//{
+	  //data[data_bytes_recieved]=nextChar;
+	  //data_bytes_recieved++;	
+	//} 
+	//else
+	//{
+		//for (i=0;i<=data_bytes_recieved;i++)
+		//{
+			//final_data[i]=data[i];
+		//}  
+	 //uart_str_complete=1;
+	//}
  }
 ISR (USART1_RX_vect)
 {
@@ -377,35 +341,70 @@ unsigned char get_direction()
 		return 0;
 	}
 }
+void clear_port()
+{
+	PORTD&=~0x70;
+}
+void set_led_mode (unsigned char modus)
+{
+	clear_port();
+	PORTD|=modus;
+}
+void make_sound()
+{
+	to_uARM("M2210 F500 T200\n");
+	_delay_ms(200);
+	to_uARM("M2210 F1000 T500\n");
+	_delay_ms(500);
+	to_uARM("M2210 F2000 T500\n");
+}
+void goto_start()
+{
+	send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
+	while(uart_string1[4] == 0x31) //ASCII '1' --> moving
+	{
+		to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
+	}
+}
+void start_nowait()
+{
+	send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
+}
 void start_up_routine ()
 {
-	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert
-	wait_1ms(1000);
+	init_BT_CAR_V2_0();			// Das Board wird hier initialisiern
+	wait_1ms(10);
 	init_ADC();
 	init_UART0();
 	init_UART1();
-	wait_1ms(1000);
-	//while (final_data[0]!='D')
-	//{
-	//	to_pc('R');
-	//}
-	
+	wait_1ms(10);
+	wait_1ms(50);
+	write_text(0,0,PSTR("        OKE         "));
+	write_text(1,0,PSTR("        BY          "));
+	write_text(2,0,PSTR("        JAN         "));
+	write_text(3,0,PSTR("       TENDAI       "));
+	set_led_mode(IDLE);
+	goto_start();
+	make_sound();
+	while(pc_ready==0)
+	{
+		send_Byte_0('D');
+		wait_1ms(500);
+	}
+	goto_start();
+	set_led_mode(FINISHED);
 }
 
 
 
 int main (void)
 {
-	start_up_routine();
-	/*
-	check:	bit0 für überprüfung von eingehenden Daten (X)
-			bit1 für überprüfung von eingehenden Daten (Y)
-			bit2 für überprüfung ob job beendet ist	   (O)
-	*/
-	
-	unsigned char taster,direction,check,counter,routine_done;
-	int recieved_X,recieved_Y,Z; 
+	unsigned char taster,direction,counter,go_through;
+	int recieved_X,recieved_Y;
 	unsigned char buffer [30];
+	unsigned char return_buffer[30];
+	start_up_routine();
+	
 	/*
 		//C#2/Db2  	69.30 	497.87
 		//D#2/Eb2  	77.78 	443.55
@@ -437,230 +436,172 @@ int main (void)
 		//G_1=51.91,
 		//A1=55.00,
 		//A_1=58.27,*/
-	unsigned int notes[NOTEAMOUNT]{62,65,73,82,87,98,119,123,130,147,165,175}
-	typedef enum
-	{
-			
-			B1=62,
-			C2=65,
-			C_2=69,
-			D2=73,
-			D_2=78,
-			E2=82,
-			F2=87,
-			F_2=93, 	
-			G2=98,
-			G_2=104, 	
-			A2=110,
-			A_2=117, 	
-			B2=	123,
-			C3=131,
-			C_3=139, 	
-			D3=147,
-			D_3=156,
-			E3=165,
-			F3=175,
-			F_3=185, 	
-			G3=196,
-			G_3=208, 	
-			A3=220,
-			A_3=233, 	
-			B3=247,
-			C4=262,
-			C_4=277, 	
-			D4=294,
-			D_4=311, 	
-			E4=330,
-			F4=349,
-			F_4=370, 
-			G4=392,
-			G_4=415, 
-			A4=440,
-			A_4=466,
-			B4=	494,
-			C5=523,
-			C_5=554,
-			D5=587,
-			D_5=622, 	
-			E5=659,
-			F5=698,	
-			F_5=740, 
-			G5=784,
-			G_5=831, 	
-			A5=880,
-			A_5=932,	
-			B5=988,
-			C6=	1047,
-			C_6=1108, 
-			D6=1175,
-			D_6=1245,
-			E6=1319,
-			F6=1397,
-			F_6=1480, 
-			G6=1568,
-			G_6=1661,
-			A6=1760,
-			A_6=1865,
-			B6=1976,
-			C7=2093,
-			C_7=2217,
-			D7=2349,
-			D_7=2489,
-			E7=2637,
-			F7=2794,
-			F_7=2960,
-			G7=3136,
-			G_7=3322,
-			A7=	3520,
-			A_7=3729,
-			B7=3951,
-			C8=4186,
-			C_8=4435,
-			D8=	4699,
-			D_8=4978,
-			E8=5274,
-			F8=	5588,
-			F_8=5920,
-			G8=6272,
-			G_8=6645,
-			A8=7040,
-			A_8=7459,
-			B8=7902,
+	/*
+	//unsigned int notes[NOTEAMOUNT]{62,65,73,82,87,98,119,123,130,147,165,175}
+	//typedef enum
+	//{
 			//
-	} letter;
+			//B1=62,
+			//C2=65,
+			//C_2=69,
+			//D2=73,
+			//D_2=78,
+			//E2=82,
+			//F2=87,
+			//F_2=93, 	
+			//G2=98,
+			//G_2=104, 	
+			//A2=110,
+			//A_2=117, 	
+			//B2=	123,
+			//C3=131,
+			//C_3=139, 	
+			//D3=147,
+			//D_3=156,
+			//E3=165,
+			//F3=175,
+			//F_3=185, 	
+			//G3=196,
+			//G_3=208, 	
+			//A3=220,
+			//A_3=233, 	
+			//B3=247,
+			//C4=262,
+			//C_4=277, 	
+			//D4=294,
+			//D_4=311, 	
+			//E4=330,
+			//F4=349,
+			//F_4=370, 
+			//G4=392,
+			//G_4=415, 
+			//A4=440,
+			//A_4=466,
+			//B4=	494,
+			//C5=523,
+			//C_5=554,
+			//D5=587,
+			//D_5=622, 	
+			//E5=659,
+			//F5=698,	
+			//F_5=740, 
+			//G5=784,
+			//G_5=831, 	
+			//A5=880,
+			//A_5=932,	
+			//B5=988,
+			//C6=	1047,
+			//C_6=1108, 
+			//D6=1175,
+			//D_6=1245,
+			//E6=1319,
+			//F6=1397,
+			//F_6=1480, 
+			//G6=1568,
+			//G_6=1661,
+			//A6=1760,
+			//A_6=1865,
+			//B6=1976,
+			//C7=2093,
+			//C_7=2217,
+			//D7=2349,
+			//D_7=2489,
+			//E7=2637,
+			//F7=2794,
+			//F_7=2960,
+			//G7=3136,
+			//G_7=3322,
+			//A7=	3520,
+			//A_7=3729,
+			//B7=3951,
+			//C8=4186,
+			//C_8=4435,
+			//D8=	4699,
+			//D_8=4978,
+			//E8=5274,
+			//F8=	5588,
+			//F_8=5920,
+			//G8=6272,
+			//G_8=6645,
+			//A8=7040,
+			//A_8=7459,
+			//B8=7902,
+			//
+	//} letter;
+	*/
 
 	//Note	Frequency (Hz)	
-
-	
-	
-	
-	clear_lcd();
+	goto_start();
 	to_uARM("M2210 F500 T20\n");
-	_delay_ms(100);
-	send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
-	while(uart_string1[4] == 0x31) //ASCII '1' --> moving
-	{
-		to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-	}
-	to_uARM("M2210 F500 T200\n");
-	_delay_ms(200);
-	to_uARM("M2210 F1000 T500\n");
-	_delay_ms(500);
-	to_uARM("M2210 F2000 T500\n");
-
+	clear_lcd();
+	wait_1ms(10);
+	write_text(0,0,"       O.K.E.       ");
+	write_text(1,1,"        BY          ");
+	write_text(2,0,"        JAN         ");
+	write_text(3,0,"       TENDAI       ");
+	_delay_ms(3000);
+	set_led_mode(IDLE);
+	clear_lcd();
+	goto_start();
 	while(1)
 	{
 	//	direction=get_direction();
-		taster = get_LCD_Taster();
+		
 		DIP_Switch=get_DIP_Switch();
+		write_zahl(3,0,lol,4,0,0);
 		if (taster&0x08)
 		{
-			send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
-			while(uart_string1[4] == 0x31) //ASCII '1' --> moving
-			{
-				to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-			}
-			if (DIP_Switch&0x01)
-			{
-				to_uARM("M2210 F500 T200\n");
-				_delay_ms(200);
-				to_uARM("M2210 F1000 T500\n");
-				_delay_ms(500);
-				to_uARM("M2210 F2000 T500\n");
-			}
+			goto_start();
+			make_sound();
+		}		
+		if (routine_done>=1) //if routine done
+		{
+			make_sound();
+			routine_done=0;
 		}
-		
 		if (uart_str_complete!=0)
 		{
-			routine_done=0;
 			uart_str_complete=0;
 			send_Byte_0('1');	
-			for (counter=0;counter<=data_bytes_recieved;counter++)
+			PORTB|=0x02;
+			recieved_Y=(data[1]-48)*1000+(data[2]-48)*100+(data[3]-48)*10+data[4]-48;
+			recieved_X=(data[6]-48)*1000+(data[7]-48)*100+(data[8]-48)*10+data[9]-48;
+			write_zahl(0,0,recieved_X,5,0,0);
+			write_zahl(1,0,recieved_Y,5,0,0);
+			_delay_ms(2);
+			snprintf(return_buffer,30,"%d %d",recieved_X,recieved_Y);
+			to_pc(return_buffer);
+			while(((false_state==0)&&(good==0))||((taster&0x01)!=0))
 			{
-				switch (final_data[counter])//final data decoding
-				{
-					case 'X':
-						//filter data
-						recieved_Y=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
-						send_Byte_0('1');	//return that data good
-						_delay_ms(2);
-						check++;		//check that data X good
-					break;
-				
-					case 'Y':
-						recieved_X=(final_data[counter+1]-48)*1000+(final_data[counter+2]-48)*100+(final_data[counter+3]-48)*10+final_data[counter+4]-48;
-						send_Byte_0('1');	//return that data good
-						_delay_ms(2);		//check that data Y good
-						check++;
-					break;
-						
-					case 'O':
-					routine_done=1;
-					check++;	//routine done
-					break;
-
-				}
+				taster = get_LCD_Taster();
 			}
-			data_bytes_recieved=0;
-			if ((check<=0)&&(check>2))
+			if (good!=0)
 			{
-				send_Byte_0('0');	//return error
-			}
-			else
-			{
-				check=0;
-			}
-			if (routine_done>=1) //if routine done
-			{
-				send_to_uArm("G0 X200 Y0 Z150 F6000\n");	//back to start-position
-				routine_done=0;
-				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
-				{
-					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
-				}
-				if (DIP_Switch&0x01)		//denn macht er meis
-				{
-					to_uARM("M2210 F500 T200\n");
-					_delay_ms(200);
-					to_uARM("M2210 F1000 T500\n");
-					_delay_ms(500);
-					to_uARM("M2210 F2000 T500\n");
-				}
-			}
-			else
-			{
-				if (DIP_Switch&0x80)		//displays data
-				{
-					write_zahl(2,10,recieved_X,4,0,0);
-					write_zahl(3,10,recieved_Y,4,0,0);
-				}	
+				PORTB|0x04;
 				//Grid anpassung
 				recieved_X-=384;
-				recieved_Y-=512;				
+				recieved_Y-=512;
 				recieved_X=((recieved_X/5)*-1)+200;
-				recieved_Y=(recieved_Y/5)*-1;	
-				////////////////
-				//form new string			
-				snprintf(buffer,30,"G0 X%d Y%d Z-20 F6000\n",recieved_X,recieved_Y);
-				if (DIP_Switch&0x80)		//display new x/y calculated data
-				{
-					write_zahl(2,0,recieved_X,4,0,0);
-					write_zahl(3,0,recieved_Y,4,0,0);
-				}
+				recieved_Y=(recieved_Y/5)*-1;
+				snprintf(buffer,30,"G0 X%d Y%d Z-20 F6000\n",recieved_X,recieved_Y);//////////////////form new string
 				send_to_uArm(buffer);		//send new string
+				_delay_ms(2);
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 				}
-				if (DIP_Switch&0x01)	//macht wider meis wen er det isch
-				{
-					to_uARM("M2210 F2000 T200\n");
-				}
-				
+				to_uARM("M2210 F2000 T200\n");
 				send_Byte_0('1');		//return that action done
+				good=0;
 			}
-				
-		}
+			else
+			{
+				PORTB|0x08;
+				set_led_mode(IDLE);
+				false_state=0;
+			}
+			
+		}		
 	} //end while(1)
 } //end main
 

@@ -56,8 +56,9 @@ void init_BT_CAR_V2_0(void)
 	//PC6, PC7 32.678 KHz Quarz 
 
 	//Initialisierung PortD
-	DDRD  =  0xFC;			// PD7,PD6,PD5,PD4 als Outputs (PWM), PD3 Output (Enable HB), PD2 Output (Summer)
+	DDRD  =  0x8C;			// PD7, als Outputs (PWM), PD3 Output (Enable HB), PD2 Output (Summer)
 							// PD1 und PD0 sind TxD und RxD von UART0 werden über RXEN und TXEN aktiviert
+							//PD6,PD5,PD4eingang
 							
 	sei(); 					// Global Interrupts aktivieren	
 	lcd_init();				// Das LCD muss ebenfalls initialisiert werden, um später genutz werden zu können

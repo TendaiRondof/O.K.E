@@ -77,7 +77,7 @@ class GUI(tk.Tk):
         self.update()
 
     def show_image_in_tk(self,img):
-        img = cv2.resize(img,(480,360))
+        img = cv2.resize(img,(1024,768))#cv2.resize(img,(480,360))
         im = Image.fromarray(img)
         imgtk = ImageTk.PhotoImage(image=im)
         self.img_label.image = imgtk
@@ -102,7 +102,7 @@ class Application:
 
         self.myGui.img_label.configure(text="Init CAM...")
         self.myGui.update()
-        self.cam = cv2.VideoCapture(1)
+        self.cam = cv2.VideoCapture(0)
 
         self.myGui.img_label.configure(text="Finish")
         self.myGui.update()
@@ -125,18 +125,21 @@ class Application:
 
                         top, left, bottom, right = box
                         ret_img = cv2.rectangle(img,(left,top),(right,bottom),(255,0,0),2)
-             
+        else :
+            return img,[]
         return ret_img,finale_boxes
     
     def analyze_joints(self,boxes):
-        for center in boxes[1:]:
+
+        for center in boxes:
+
             ###############################
             #send coordinates to robo arm
             self.MCRobo.send(center)
             # wait for ack.
             ack,succ = self.MCRobo.recieve()
             if not(succ and ack):
-                raise Exception("Kommunikation transfär Error")
+                raise Exception("Kommunikation transfär Error:",succ,ack)
             ack,succ = self.MCRobo.recieve()
             if not(succ and ack):
                 raise Exception("Kommunikation Error X")
@@ -147,8 +150,9 @@ class Application:
             fin,succ = self.MCRobo.recieve()
             if not(succ and fin):
                 raise Exception("Socked Down")
-            
-            sleep(1)
+        
+            sleep(5)
+
             joint_img = self.take_pic()
             self.myGui.show_image_in_tk(joint_img)
             sleep(0.1)

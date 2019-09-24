@@ -25,6 +25,7 @@ by Tendai und Jan
 #define FORWARD			6
 #define MAX_RGBs 20
 #define COLORLENGTH 20
+#define NOTEAMOUNT		20
 
 u8 Receive_count=0,i=0;
 char trennzeichen[] = " ";
@@ -64,7 +65,6 @@ u8 get_DIP_Switch(void)
 	}
 	return(DIP_Result);
 }
-
 u8 get_LCD_Taster(void)
 {
 	u8 LCD_Taster;
@@ -88,7 +88,6 @@ u8 get_LCD_Taster(void)
 	DDRB  =  0xFF;			// jetzt wieder LED Port, alles Outputs
 	return(LCD_Taster);
 }
-
 void init_ADC(void)
 {
 	// Initialisierung des ADC's
@@ -98,7 +97,6 @@ void init_ADC(void)
 															//ADC_Clk=125kHz(8us)
 															//13 Clks->13x8=104us
 }
-
 u16 get_ADC_Channel(u8 Kanal)
 {	
 	u16 AD_Result;
@@ -110,7 +108,6 @@ u16 get_ADC_Channel(u8 Kanal)
 	AD_Result = ADCL + (ADCH << 8);	//ADCL zuerst lesen, dann erst ADCH!
 	return(AD_Result);
 }
-
 void init_UART0(void)
 {
 	// Initialisierung UART0 (RxD0, TxD0)
@@ -119,7 +116,6 @@ void init_UART0(void)
 	//UCSR0C muss nicht initialisiert werden, Standardwerte: Asynchron, 8Databits,Noneparity, ein Stopbit
 	UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0); //TxD, RxD Enable und RxD Interrupt Enable
 }
-
 void init_UART1(void)
 {
 	// Initialisierung UART0 (RxD0, TxD0)
@@ -128,14 +124,12 @@ void init_UART1(void)
 	//UCSR0C muss nicht initialisiert werden, Standardwerte: Asynchron, 8Databits,Noneparity, ein Stopbit
 	UCSR1B |= (1 << RXCIE1) | (1 << RXEN1) | (1 << TXEN1); //TxD, RxD Enable und RxD Interrupt Enable
 }
-
 void send_Byte_0(u8 val)
 {
 	//Wait for empty Buffer
 	while( !(UCSR0A & (1<<UDRE0)) );
 	UDR0=val;	//Transmit starts
 }
-
 void send_Byte_1(u8 val)
 {
 	//Wait for empty Buffer
@@ -144,7 +138,6 @@ void send_Byte_1(u8 val)
 	
 	UDR1=val;	//Transmit starts
 }
-
 void XYZ_to_Display(u16 Delay_LCD)
 {
 	uart_str_complete = 1;	//String für Änderungen blockieren!
@@ -162,7 +155,6 @@ void XYZ_to_Display(u16 Delay_LCD)
 	uart_str_complete = 0;
 	wait_1ms(Delay_LCD);
 }
-
 void to_pc (char *_str)
 {
 	//for(m=0;m<UART_MAXSTRLEN+1;m++) //Array löschen nicht nötig!
@@ -174,7 +166,6 @@ void to_pc (char *_str)
 	}
 	uart_str_complete = 0; //String freigeben um Antwort zu empfangen
 }
-
 void to_uARM(char *_str)
 {
 	//for(m=0;m<UART_MAXSTRLEN+1;m++) //Array löschen nicht nötig!
@@ -190,7 +181,6 @@ void to_uARM(char *_str)
 	//setzt dann uart_str_complete = 0
 
 }
-
 void send_to_uArm(char *str)
 {
 	to_uARM(str);
@@ -203,7 +193,6 @@ void send_to_uArm(char *str)
 	//XYZ_to_Display(0);	//Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
 						//setzt dann uart_str_complete = 0
 }
-
 void uArm_goto_xyz(int x, int y, int z, unsigned int speed)
 {
 	char x_string[6];
@@ -228,7 +217,6 @@ void uArm_goto_xyz(int x, int y, int z, unsigned int speed)
 	wait_1ms(100); //optional für ruhigere Bewegungen und LCD Display
 	send_to_uArm(uart_string_send);	
 }
-
 int Get_uArm_Koordinate(char Achse)
 {
 	double Wert_tmp;
@@ -276,7 +264,6 @@ int Get_uArm_Koordinate(char Achse)
 	uart_str_complete = 0;
 	//wait_1ms(Delay_LCD);	
 }
-
 ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 {
 	unsigned char i;
@@ -298,7 +285,6 @@ ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 	 uart_str_complete=1;
 	}
  }
-
 ISR (USART1_RX_vect)
 {
 	unsigned char nextChar;
@@ -321,7 +307,6 @@ ISR (USART1_RX_vect)
 		}
 	}
 }
-
 void move (unsigned char direction, int amount)
 {
 	
@@ -364,7 +349,6 @@ void move (unsigned char direction, int amount)
 		
 	}
 }
-
 unsigned char get_direction()
 {
 	unsigned int x;
@@ -393,7 +377,6 @@ unsigned char get_direction()
 		return 0;
 	}
 }
-
 void start_up_routine ()
 {
 	init_BT_CAR_V2_0();			// Das Board wird hier initialisiert
@@ -409,6 +392,8 @@ void start_up_routine ()
 	
 }
 
+
+
 int main (void)
 {
 	start_up_routine();
@@ -421,8 +406,134 @@ int main (void)
 	unsigned char taster,direction,check,counter,routine_done;
 	int recieved_X,recieved_Y,Z; 
 	unsigned char buffer [30];
-	//unsigned char music[50]={0,0,2,2,0,0,5,5,4,4,4,4,0,0,2,2,0,0,7,7,5,5,5,5,0,0,12,12,9,9,5,5,4,4,2,2,10,10,9,9,5,5,7,7,5,5,5,5,5,5};
-	//unsigned int sound[14]={262,277,294,311,330,349,370,392,415,440,466,494,523,0};
+	/*
+		//C#2/Db2  	69.30 	497.87
+		//D#2/Eb2  	77.78 	443.55
+		//F#2/Gb2  	92.50 	372.98
+		//G#2/Ab2  	103.83 	332.29
+		//A#2/Bb2  	116.54 	296.03
+		//C#3/Db3  	138.59 	248.93
+		//D#3/Eb3  	155.56 	221.77
+		//C0=16,
+		//C_0=17.32,
+		//D0=18.35,
+		//D_0=19.45,
+		//E0=20.60,
+		//F0=21.83,
+		//F_0=23.12,
+		//G0=24.50,
+		//G_0=25.96,
+		//A0=27.50,
+		//A_0=29.14,
+		//B0=30.87,
+		//C1=32.70,
+		//C_1=34.65,
+		//D1=	36.71,
+		//D_1=38.89,
+		//E1=	41.20,
+		//F1=43.65,
+		//F_1=46.25,
+		//G1=	49.00,
+		//G_1=51.91,
+		//A1=55.00,
+		//A_1=58.27,*/
+	unsigned int notes[NOTEAMOUNT]{62,65,73,82,87,98,119,123,130,147,165,175}
+	typedef enum
+	{
+			
+			B1=62,
+			C2=65,
+			C_2=69,
+			D2=73,
+			D_2=78,
+			E2=82,
+			F2=87,
+			F_2=93, 	
+			G2=98,
+			G_2=104, 	
+			A2=110,
+			A_2=117, 	
+			B2=	123,
+			C3=131,
+			C_3=139, 	
+			D3=147,
+			D_3=156,
+			E3=165,
+			F3=175,
+			F_3=185, 	
+			G3=196,
+			G_3=208, 	
+			A3=220,
+			A_3=233, 	
+			B3=247,
+			C4=262,
+			C_4=277, 	
+			D4=294,
+			D_4=311, 	
+			E4=330,
+			F4=349,
+			F_4=370, 
+			G4=392,
+			G_4=415, 
+			A4=440,
+			A_4=466,
+			B4=	494,
+			C5=523,
+			C_5=554,
+			D5=587,
+			D_5=622, 	
+			E5=659,
+			F5=698,	
+			F_5=740, 
+			G5=784,
+			G_5=831, 	
+			A5=880,
+			A_5=932,	
+			B5=988,
+			C6=	1047,
+			C_6=1108, 
+			D6=1175,
+			D_6=1245,
+			E6=1319,
+			F6=1397,
+			F_6=1480, 
+			G6=1568,
+			G_6=1661,
+			A6=1760,
+			A_6=1865,
+			B6=1976,
+			C7=2093,
+			C_7=2217,
+			D7=2349,
+			D_7=2489,
+			E7=2637,
+			F7=2794,
+			F_7=2960,
+			G7=3136,
+			G_7=3322,
+			A7=	3520,
+			A_7=3729,
+			B7=3951,
+			C8=4186,
+			C_8=4435,
+			D8=	4699,
+			D_8=4978,
+			E8=5274,
+			F8=	5588,
+			F_8=5920,
+			G8=6272,
+			G_8=6645,
+			A8=7040,
+			A_8=7459,
+			B8=7902,
+			//
+	} letter;
+
+	//Note	Frequency (Hz)	
+
+	
+	
+	
 	clear_lcd();
 	to_uARM("M2210 F500 T20\n");
 	_delay_ms(100);

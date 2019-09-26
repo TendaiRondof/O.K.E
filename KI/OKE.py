@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 from keras_yolo3.yolo import YOLO
 from UART_Con import MCRoboarm
 from time import sleep
+import random
 
 
 class YOLO_Manager(YOLO):
@@ -58,59 +59,49 @@ class YOLO_Manager(YOLO):
 
 
 class GUI(tk.Tk):
-    def __init__(self,):
+    def __init__(self,parent):
         super().__init__()
-        
+        self.bind("<F11>",self.toggle_fullscreen)
+        self.fullscreen = True
+        self.attributes("-fullscreen",self.fullscreen )
+        self.parent = parent
         self.take_shot = 0
+        self.info_label = tk.Label(self,text="Starting...")
+        self.info_label.pack()
         self.img_label = tk.Label(self)
         self.img_label.pack()
-        self.tk_shot_btn = tk.Button(self,text="Analyze",command=self.set_take_shot)
+        self.tk_shot_btn = tk.Button(self,text="Analyze",bg="gray",command=self.set_take_shot)
         self.tk_shot_btn.pack()
+        
+    def toggle_fullscreen(self,x):
+        self.fullscreen = not self.fullscreen
+        self.attributes("-fullscreen",self.fullscreen)
 
     def set_take_shot(self):
         self.take_shot = not self.take_shot
-
+        
         if self.take_shot:
-            self.tk_shot_btn.configure(text="Analyzing...",bg="green")
+            self.tk_shot_btn.configure(text="Analysing...",bg="green")
         else:
-            self.tk_shot_btn.configure(text="Analyze",bg=None)
+            self.tk_shot_btn.configure(text="Start",bg="gray")
         self.update()
-
-    def show_image_in_tk(self,img):
-        img = cv2.resize(img,(1024,768))#cv2.resize(img,(480,360))
-        im = Image.fromarray(img)
-        imgtk = ImageTk.PhotoImage(image=im)
-        self.img_label.image = imgtk
-        self.img_label.configure(image=imgtk,text="")
-
-        self.update()
-
-
-
+        
 class Application:
     def __init__(self):
-        self.myGui = GUI()
-
-        self.myGui.img_label.configure(text="Init YOLO Manager...")
-        self.myGui.update()
-
+        self.myGui = GUI(self)
+        self.print("Starting...")
         self.yolo = YOLO_Manager()
-
-        self.myGui.img_label.configure(text="Init Röbi...")
-        self.myGui.update()
+        self.print("AI 1 has been loded")
         self.MCRobo = MCRoboarm("00:06:66:76:52:C3",1)
-
-        self.myGui.img_label.configure(text="Init CAM...")
-        self.myGui.update()
+        self.print("Röbi is connected")        
         self.cam = cv2.VideoCapture(0)
-
-        self.myGui.img_label.configure(text="Finish")
-        self.myGui.update()
+        self.print("Cameras is conected")
 
     def analyze(self,img):
         boxes = self.yolo.analyze(img)
         
-        finale_boxes = []
+        centers = []
+        return_boxes = []
         if len(boxes)>0:
             for img_nr,all_box in enumerate(boxes):
                 if len(all_box)>0:
@@ -121,46 +112,63 @@ class Application:
                         box[2] += int(img_nr/4)*256 #bottom
                         center = (int((box[3]-box[1])/2)+box[1],int((box[2]-box[0])/2)+box[0])
 
-                        finale_boxes.append(center)
+                        centers.append(center)
+                        return_boxes.append(box)
 
                         top, left, bottom, right = box
                         ret_img = cv2.rectangle(img,(left,top),(right,bottom),(255,0,0),2)
-        else :
-            return img,[]
-        return ret_img,finale_boxes
+             
+        return ret_img,centers,return_boxes
     
-    def analyze_joints(self,boxes):
-
-        for center in boxes:
-
+    def analyze_joints(self,centers):
+        results = []
+        
+        self.print("{} Solderjoints have been found".format(len(centers)))
+        sleep(10)
+        print("Mitte: 512,384")
+        for center in centers:
+            if not self.myGui.take_shot:
+                break
+            self.print("Sending coord: {}".format(center))
             ###############################
             #send coordinates to robo arm
             self.MCRobo.send(center)
             # wait for ack.
-            ack,succ = self.MCRobo.recieve()
+            try:
+                ack,succ = self.MCRobo.recieve()
+            except:
+                print("sent a 'D' again")
+                ack,succ = self.MCRobo.recieve()
+                
             if not(succ and ack):
-                raise Exception("Kommunikation transfär Error:",succ,ack)
-            ack,succ = self.MCRobo.recieve()
-            if not(succ and ack):
-                raise Exception("Kommunikation Error X")
-            ack,succ = self.MCRobo.recieve()
-            if not(succ and ack):
-                raise Exception("Kommunikation Error Y")
+                raise Exception("Kommunikation transfähr Error, röbi sent {}".format(ack))
+            x,y = self.MCRobo.sock.recv(10).decode().split(" ")
+            x = int(x)
+            y = int(y)
+            
+            if (y,x) != center:
+                self.print("Not same Coordinates recieved:{}, expected: {}".format((x,y),center))
+                self.MCRobo.sock.send("E")
+            self.MCRobo.sock.send("G")
+            
             #wait for movement
             fin,succ = self.MCRobo.recieve()
             if not(succ and fin):
                 raise Exception("Socked Down")
-        
-            sleep(5)
-
+            sleep(1)                
             joint_img = self.take_pic()
-            self.myGui.show_image_in_tk(joint_img)
+            self.show_image_in_tk(joint_img)
             sleep(0.1)
-            
             # use second AI
+            results.append(int((random.random()*1000))%3)
             #get result
             ###############################
-        self.MCRobo.sock.send("O\n")
+            
+        #send Jan finish signal
+        self.MCRobo.sock.send("O")
+        print("Ende")
+        
+        return results
         
     def take_pic(self):
         res,img = self.cam.read()
@@ -169,8 +177,44 @@ class Application:
         
         return img
     
+    def show_image_in_tk(self,img):
+        img = cv2.resize(img,(480,360))
+        im = Image.fromarray(img)
+        imgtk = ImageTk.PhotoImage(image=im)
+        self.myGui.img_label.configure(image=imgtk,text="")
+        self.myGui.img_label.image = imgtk
+        
+        self.myGui.update()
+        
+    def draw_result(self,img,boxes,results):
+        if len(results)>0:
+            for i,result in enumerate(results):
+                top, left, bottom, right = boxes[i]
+                if result == 0:
+                    ret_img = cv2.rectangle(img,(left,top),(right,bottom),(255,0,0),2)
+                elif result == 1:
+                    ret_img = cv2.rectangle(img,(left,top),(right,bottom),(255,255,0),2)
+                elif result == 2:
+                    ret_img = cv2.rectangle(img,(left,top),(right,bottom),(0,255,0),2)
+            self.show_image_in_tk(ret_img)
+            
+    def print(self,_str):
+        self.myGui.info_label.configure(text=_str)
+        self.myGui.update()
+            
     def run(self):
         try:
+            self.print("waiting for Röbi...")
+            #self.MCRobo.sock.recv(1)
+            #self.MCRobo.sock.send("M")
+            #self.MCRobo.sock.settimeout(2)
+            #try:
+            #    self.MCRobo.sock.recv(1024)
+            #except:
+            #    pass
+            self.MCRobo.sock.settimeout(10)
+            
+            sleep(2)
             while True:
                 #Take image
                 res,img = self.cam.read()
@@ -181,23 +225,34 @@ class Application:
                     
                     #if analysing initialized
                     if self.myGui.take_shot:
-                        img,boxes = self.analyze(img)
-                        self.myGui.show_image_in_tk(img)
-                        self.myGui.tk_shot_btn.configure(text="Stop",bg="red")
-                        
+                        #infom Jan for calc stared
+                        self.MCRobo.sock.send("C")
+                        #search all joints
+                        original_image = img
+                        img,centers,boxes = self.analyze(img)
+                        self.show_image_in_tk(img)
+                        self.myGui.tk_shot_btn.configure(text="Abbrechen",bg="red")
                         sleep(1)
-                        self.analyze_joints(boxes)
+                        #start Analysing session
+                        self.MCRobo.sock.send("A")
+                        results = self.analyze_joints(centers)
+                        #show results on screen
+                        self.draw_result(original_image,boxes,results)
+                        #wait until manualy endig
                         while self.myGui.take_shot:
                             self.myGui.update()
+                        self.MCRobo.sock.send("S")
+                        self.print("back to Idle")
                         
                     else:
-                        self.myGui.show_image_in_tk(img)
+                        self.show_image_in_tk(img)
                 else:
                     self.myGui.img_label.configure(text="CAM ERROR!!!!!!")
-                
+                self.print("idle...")                
                 self.myGui.update()
         finally:
             self.cam.release()
+            self.MCRobo.disconnect()
 
 if __name__ == "__main__":
     app = Application()

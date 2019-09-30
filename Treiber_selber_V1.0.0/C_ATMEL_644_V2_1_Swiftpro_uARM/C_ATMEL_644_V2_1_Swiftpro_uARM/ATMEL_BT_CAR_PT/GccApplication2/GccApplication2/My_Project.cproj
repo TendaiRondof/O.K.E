@@ -97,7 +97,7 @@
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
         <InterfaceProperties>
-          <IspClock>1820000</IspClock>
+          <IspClock>125000</IspClock>
           <DebugWireClockDiv>0</DebugWireClockDiv>
           <JtagDbgClock>200000</JtagDbgClock>
         </InterfaceProperties>

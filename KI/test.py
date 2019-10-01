@@ -10,7 +10,6 @@ sleep(1)
 print('Connected')
 
 while input("send")!= "n":
-    #X_string = input("X wert")
     sock.send("X1024Y0768\n")
     print("sent")
 

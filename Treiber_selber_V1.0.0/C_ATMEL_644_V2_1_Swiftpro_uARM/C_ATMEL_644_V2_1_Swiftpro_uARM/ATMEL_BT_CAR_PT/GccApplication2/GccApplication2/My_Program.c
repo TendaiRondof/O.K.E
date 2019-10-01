@@ -197,6 +197,7 @@ ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 		
 		case 'C':
 			set_led_mode(WAITING_FOR_FIRST_CMD);
+			play_sound=1;
 		break;
 		
 		case 'S':
@@ -225,6 +226,11 @@ ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 		case 'D':
 			pc_ready=1;
 		break;
+		
+		case 'M':
+			play_sound=1;
+		break;
+			
 		default:
 			PORTB|=0x01;
 			data[data_bytes_recieved]=nextChar;
@@ -366,6 +372,13 @@ void goto_start()
 		to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 	}
 }
+void beep(unsigned char dipswitch)
+{
+	if (dipswitch&0x01)
+	{
+		to_uARM("M2210 F2000 T200\n");
+	}
+}
 void start_nowait()
 {
 	send_to_uArm("G0 X200 Y0 Z150 F6000\n");			//ausgansgpkt	(200 0 150)
@@ -386,20 +399,124 @@ void start_up_routine ()
 	set_led_mode(IDLE);
 	goto_start();
 	make_sound();
-	while(pc_ready==0)
-	{
-		send_Byte_0('D');
-		wait_1ms(500);
-	}
+	//while(pc_ready==0)
+	//{
+		//send_Byte_0('D');
+		//wait_1ms(500);
+	//}
 	goto_start();
 	set_led_mode(FINISHED);
+}
+void play_somthin_booy()
+{
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(150);
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F510 T100\n");
+	_delay_ms(100);
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F770 T100\n");
+	_delay_ms(550);
+	to_uARM("M2210 F380 T100\n");
+	_delay_ms(575);
+	
+	to_uARM("M2210 F510 T100\n");
+	_delay_ms(450);
+	to_uARM("M2210 F380 T100\n");
+	_delay_ms(400);
+	to_uARM("M2210 F320 T100\n");
+	_delay_ms(500);
+	to_uARM("M2210 F440 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F480 T80\n");
+	_delay_ms(330);
+	to_uARM("M2210 F450 T100\n");
+	_delay_ms(150);
+	to_uARM("M2210 F430 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F380 T100\n");
+	_delay_ms(200);
+	to_uARM("M2210 F660 T80\n");
+	_delay_ms(200);
+	to_uARM("M2210 F760 T50\n");
+	_delay_ms(150);
+	to_uARM("M2210 F860 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 700 T80\n");
+	_delay_ms(150);
+	to_uARM("M2210 F760 T50\n");
+	_delay_ms(350);
+	to_uARM("M2210 F660 T80\n");
+	_delay_ms(300);
+	to_uARM("M2210 F520 T80\n");
+	_delay_ms(150);
+	to_uARM("M2210 F580 T80\n");
+	_delay_ms(150);
+	to_uARM("M2210 F480 T80\n");
+	_delay_ms(500);
+		
+	to_uARM("M2210 F510 T100\n");
+	_delay_ms(450);
+	to_uARM("M2210 F380 T100\n");
+	_delay_ms(400);
+	to_uARM("M2210 F320 T100\n");
+	_delay_ms(500);
+	to_uARM("M2210 F440 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F480 T80\n");
+	_delay_ms(330);
+	to_uARM("M2210 F450 T100\n");
+	_delay_ms(150);
+	to_uARM("M2210 F430 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F380 T100\n");
+	_delay_ms(200);
+	to_uARM("M2210 F660 T80\n");
+	_delay_ms(200);
+	to_uARM("M2210 F760 T50\n");
+	_delay_ms(150);
+	to_uARM("M2210 F860 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F700 T80\n");
+	_delay_ms(150);
+	to_uARM("M2210 F760 T50\n");
+	_delay_ms(350);
+	to_uARM("M2210 F660 T80\n");
+	_delay_ms(300);
+	to_uARM("M2210 F520 T80\n");
+	_delay_ms(150);
+	to_uARM("M2210 F580 T80\n");
+	_delay_ms(150);
+	to_uARM("M2210 F480 T80\n");
+	//_delay_ms(500);
+}
+void play_short()
+{
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(150);
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F510 T100\n");
+	_delay_ms(100);
+	to_uARM("M2210 F660 T100\n");
+	_delay_ms(300);
+	to_uARM("M2210 F770 T100\n");
+	_delay_ms(550);
+	to_uARM("M2210 F380 T100\n");
+	_delay_ms(575);
 }
 
 
 
 int main (void)
 {
-	unsigned char taster,direction,counter,go_through;
+	unsigned char taster,direction,counter,go_through,neu;
 	int recieved_X,recieved_Y;
 	unsigned char buffer [30];
 	unsigned char return_buffer[30];
@@ -535,11 +652,11 @@ int main (void)
 	to_uARM("M2210 F500 T20\n");
 	clear_lcd();
 	wait_1ms(10);
-	write_text(0,0,"       O.K.E.       ");
-	write_text(1,1,"        BY          ");
-	write_text(2,0,"        JAN         ");
-	write_text(3,0,"       TENDAI       ");
-	_delay_ms(3000);
+	write_text(0,0,PSTR("        OKE         "));
+	write_text(1,0,PSTR("        BY          "));
+	write_text(2,0,PSTR("        JAN         "));
+	write_text(3,0,PSTR("       TENDAI       "));
+	_delay_ms(5000);
 	set_led_mode(IDLE);
 	clear_lcd();
 	goto_start();
@@ -548,16 +665,29 @@ int main (void)
 	//	direction=get_direction();
 		
 		DIP_Switch=get_DIP_Switch();
+		taster=get_LCD_Taster();
 		write_zahl(3,0,lol,4,0,0);
 		if (taster&0x08)
 		{
 			goto_start();
 			make_sound();
 		}		
+		if (taster&0x02)
+		{
+			play_somthin_booy();
+		}
+		if (play_sound!=0)
+		{
+			play_somthin_booy();
+			play_sound=0;
+		}
 		if (routine_done>=1) //if routine done
 		{
 			make_sound();
+			wait_1ms(50);
+			play_short();
 			routine_done=0;
+			PORTB++;
 		}
 		if (uart_str_complete!=0)
 		{
@@ -590,7 +720,7 @@ int main (void)
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 				}
-				to_uARM("M2210 F2000 T200\n");
+				beep(DIP_Switch);
 				send_Byte_0('1');		//return that action done
 				good=0;
 			}
@@ -600,7 +730,7 @@ int main (void)
 				set_led_mode(IDLE);
 				false_state=0;
 			}
-			
+			neu=taster;
 		}		
 	} //end while(1)
 } //end main
@@ -616,7 +746,7 @@ int main (void)
 
 
 
-//	neu=taster;
+
 	//	DIP_Switch=get_DIP_Switch();
 		//move(direction,1);
 		

@@ -1,0 +1,68 @@
+Partlist
+
+Exported from Vorlage ATmega644PA.brd at 22.10.2019 10:07
+
+EAGLE Version 9.4.2 Copyright (c) 1988-2019 Autodesk, Inc.
+
+Assembly variant: 
+
+Part         Value              Package               Library                   Position (mil)        Orientation
+
++5V-POWER    Gruen              CHIPLED_1206          led                       (1428.07087 1624.33071) R0
+0_OHM_A      0 Ohm              R0805                 rcl                       (905.51181 1220.47244) R180
+0_OHM_B      0 Ohm              R0805                 rcl                       (669.29134 1220.47244) R180
+5V_DC        RECOM_DCDC         RECOM_DCDC            DCDC                      (1115.74803 1529.52756) R270
+C1           100nF              C0805                 rcl                       (1154.72441 814.17323) R270
+C2           100nF              C0805                 rcl                       (1649.17323 747.71654) R180
+C3           18pF               C0805                 rcl                       (1967.32283 964.96063) MR270
+C4           100nF              C0805                 rcl                       (1475.70866 541.06299) R180
+C5           18pF               C0805                 rcl                       (1910.62992 556.69291) MR90
+C7           100nF              C0805                 rcl                       (1540 940.62992)      R0
+C8           100nF              C0805                 rcl                       (485.43307 1638.58268) MR90
+C9           100nF              C0805                 rcl                       (1304.92126 707.32283) R90
+C11          100nF              C0805                 rcl                       (1253.74016 1480)     MR90
+C12          100uF              UD-6,3X5,8_NICHICON   rcl2                      (1138.34646 1104.56693) R180
+D1           MBRS130LT3         SMB                   diode                     (341.73228 1510.23622) MR270
+D2           MBRS130LT3         SMB                   diode                     (748.0315 1515.74803) MR90
+F1           1.0A               F1206                 fuse                      (512.99213 1346.85039) MR90
+GND          3.3V               LSP11                 solpad                    (958.11024 523.8189)  R0
+IC1          ATmega644PA        TQFP44                atmel                     (1530.31496 759.96063) MR0
+IC4          ATTINY24/44/84-SSU SOIC14                attiny24_44_84            (2237.18898 1486.26772) MR90
+JP1                             JP2Q                  jumper                    (2661.37795 468.58268) R90
+JP2                             JP2Q                  jumper                    (2110.59055 700.51181) R180
+JP3                             JP2Q                  jumper                    (620.62992 463.18898) R180
+JTAG         FTS-105-01-L-D     SAMTEC_FTS-105-01-L-D JTAG_10pol_50mil          (703.22835 220.90551) R0
+L1           10uH               L2825P                rcl                       (1153.14961 617.71654) R90
+PIEZO-POWER1                    JP1                   jumper                    (2401.5748 511.81102) R90
+PIEZO-POWER2                    JP1                   jumper                    (3188.97638 1614.17323) R0
+PIEZO-POWER3                    JP1                   jumper                    (1240.15748 137.79528) R270
+PIEZO-POWER4                    JP1                   jumper                    (2657.48031 196.85039) R0
+PIEZO-POWER5                    JP1                   jumper                    (1496.06299 137.79528) R90
+PORT_A1                         JP5Q                  jumper                    (3134.29134 1183.38583) R90
+Q1           16MHz              HC49UP                crystal                   (1858.77953 735.43307) R90
+R1           1k                 R0805                 rcl                       (2987.12598 511.81102) MR270
+R2           1k                 R0805                 rcl                       (2989.12598 275.59055) MR90
+R3           100k               R0805                 rcl                       (3075.86614 511.81102) MR270
+R4           100k               R0805                 rcl                       (3075.86614 275.59055) MR90
+R5           10k                R0805                 rcl                       (2540.55118 855.11811) MR90
+R6           150R               R0805                 rcl                       (1952.48031 1244.37008) MR90
+R7           150R               R0805                 rcl                       (1872.48031 1244.37008) MR90
+R8           1k                 R0805                 rcl                       (1428.0315 1383.85827) R270
+R9           150R               R0805                 rcl                       (1791.22047 1244.37008) MR90
+R10          150R               R0805                 rcl                       (1711.74016 1244.37008) MR90
+R11          1k                 R1206                 rcl                       (2677.16535 1614.17323) MR90
+R17          150R               R0805                 rcl                       (735 1560)            R0
+R18          150R               R0805                 rcl                       (735 1480)            R0
+R21          1k                 R1206                 rcl                       (3031.49606 1614.17323) MR90
+RESET                           TS42_4PAD             SmartPrj                  (2550.59055 888.4252) R0
+RN1          RN42_BT_RS232      RN42BT_RS232          RN42_BT_RS232             (2475.43307 1432.40157) R180
+S1                              TS42_4PAD             SmartPrj                  (3031.49606 551.1811) R180
+S2                              TS42_4PAD             SmartPrj                  (3031.49606 236.22047) R0
+U$1          BUCHSE             BUCHSE                untitled                  (531.06299 991.06299) R180
+U$2          DCDC               1X2,3_2.54MM          untitled                  (98.4252 1692.91339)  R0
+U$3          DCDC               1X2,3_2.54MM          untitled                  (98.4252 1338.58268)  R0
+U$4          STECKER_2X17_2.54  2X17_2.54             untitled                  (1653.54331 314.96063) R0
+UART_ROBO1                      JP2                   jumper                    (2323.4252 136.29921) R180
+UART_ROBO2                      JP2                   jumper                    (1850.3937 137.79528) R180
+V12          PMV20EN            SOT23                 transistor-fet-mit-BSS138 (2874.01575 1653.54331) MR90
+X1                              PN87520               con-berg                  (228.4252 367.40157)  R270

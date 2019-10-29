@@ -91,20 +91,14 @@ void to_pc (char *_str)
 }
 void to_uARM(char *_str)
 {
-	//for(m=0;m<UART_MAXSTRLEN+1;m++) //Array löschen nicht nötig!
-	//uart_string[m]='\0';
 	while (*_str)
 	{   
 		send_Byte_1(*_str);
 		_str++;
 	}
 	uart_str_complete1 = 0; //String freigeben um Antwort zu empfangen
-//	while (uart_str_complete1 == 0); //Warten bis Antwort erfolgt ist
-	//XYZ_to_Display(2000); //Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
-	//setzt dann uart_str_complete = 0
-
 }
-void send_to_uArm(char *str)
+void send_to_uArm(char *str)	//cha mer alles lösche.. wird nöd brucht
 {
 	to_uARM(str);
 	to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
@@ -112,9 +106,6 @@ void send_to_uArm(char *str)
 	{
 		to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 	}
-	//to_uARM("P2220\n"); //Koordinaten abfragen
-	//XYZ_to_Display(0);	//Kann eingesetzt werden um die Kommunikation auf dem LCD anzuzeigen
-						//setzt dann uart_str_complete = 0
 }
 void start_nowait()
 {
@@ -434,9 +425,12 @@ void error_beep()
 		play_short();
 	}
 }
-	
-
-
+void error_state()
+{
+	set_led_mode(WAITING_FOR_FIRST_CMD);
+	error_beep();
+	goto_start();.
+}
 
 void start_up_routine ()
 {
@@ -494,7 +488,7 @@ int main (void)
 			send_Byte_0('1');	
 			recieved_Y=(data[1]-48)*1000+(data[2]-48)*100+(data[3]-48)*10+data[4]-48;
 			recieved_X=(data[6]-48)*1000+(data[7]-48)*100+(data[8]-48)*10+data[9]-48;
-			//da hets en 2 ms delay drin gra... wer weiss
+			//da hets en 2 ms delay drin gha... wer weiss
 			snprintf(return_buffer,30,"%d %d",recieved_X,recieved_Y);
 			to_pc(return_buffer);
 			while(((false_state==0)&&(good==0))||((taster&0x01)!=0))
@@ -510,7 +504,7 @@ int main (void)
 				recieved_X=((recieved_X/5)*-1)+200;
 				recieved_Y=(recieved_Y/5)*-1;
 				snprintf(buffer,30,"G0 X%d Y%d Z-20 F6000\n",recieved_X,recieved_Y);//////////////////form new string
-				send_to_uArm(buffer);		//send new string
+				to_uArm(buffer);		//send new string
 				_delay_ms(2);				//kleines wait bevor abfrage 
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{
@@ -521,11 +515,10 @@ int main (void)
 			}
 			else
 			{
-				set_led_mode(WAITING_FOR_FIRST_CMD);
-				error_beep();
-				goto_start();
-				set_led_mode(IDLE);
 				false_state=0;
+				error_state();
+				_delay_ms(500);
+				set_led_mode(IDLE);
 			}
 		}		
 	} //end while(1)

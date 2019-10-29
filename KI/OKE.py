@@ -213,8 +213,6 @@ class Application:
             #except:
             #    pass
             self.MCRobo.sock.settimeout(10)
-            
-            sleep(2)
             while True:
                 #Take image
                 res,img = self.cam.read()

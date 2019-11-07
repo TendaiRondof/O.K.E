@@ -92,7 +92,7 @@ class Application:
         self.print("Starting...")
         self.yolo = YOLO_Manager()
         self.print("AI 1 has been loded")
-        self.MCRobo = MCRoboarm("00:06:66:76:52:C3",1)
+        self.MCRobo = MCRoboarm("00:06:66:EC:07:8A",1)
         self.print("Röbi is connected")        
         self.cam = cv2.VideoCapture(0)
         self.print("Cameras is conected")

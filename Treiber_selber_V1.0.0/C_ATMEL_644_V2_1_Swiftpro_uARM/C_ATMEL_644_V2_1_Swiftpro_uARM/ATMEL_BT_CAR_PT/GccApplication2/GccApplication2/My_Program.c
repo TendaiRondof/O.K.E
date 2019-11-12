@@ -656,9 +656,10 @@ int main (void)
 	write_text(1,0,PSTR("        BY          "));
 	write_text(2,0,PSTR("        JAN         "));
 	write_text(3,0,PSTR("       TENDAI       "));
-	_delay_ms(5000);
-	set_led_mode(IDLE);
+	//_delay_ms(5000);
+	//set_led_mode(IDLE);
 	clear_lcd();
+	PORTB=0x01;
 	goto_start();
 	while(1)
 	{

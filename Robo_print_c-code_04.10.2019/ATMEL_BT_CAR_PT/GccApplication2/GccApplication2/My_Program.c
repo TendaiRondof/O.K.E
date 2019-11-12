@@ -429,7 +429,7 @@ void error_state()
 {
 	set_led_mode(WAITING_FOR_FIRST_CMD);
 	error_beep();
-	goto_start();.
+	goto_start();
 }
 
 void start_up_routine ()
@@ -445,14 +445,14 @@ void start_up_routine ()
 	_delay_ms(10);
 	goto_start();
 	make_sound();
-	if (DO_START_UP)
-	{
-		while(pc_ready==0)
-		{
-			send_Byte_0('D');
-			_delay_ms(500);
-		}
-	}
+	//if (DO_START_UP)
+	//{
+		//while(pc_ready==0)
+		//{
+			//send_Byte_0('D');
+			//_delay_ms(500);
+		//}
+	//}
 	beep_short();
 	goto_start();
 	set_led_mode(FINISHED);
@@ -504,7 +504,8 @@ int main (void)
 				recieved_X=((recieved_X/5)*-1)+200;
 				recieved_Y=(recieved_Y/5)*-1;
 				snprintf(buffer,30,"G0 X%d Y%d Z-20 F6000\n",recieved_X,recieved_Y);//////////////////form new string
-				to_uArm(buffer);		//send new string
+				//to_uArm(buffer);		//send new string
+				to_uARM(buffer);
 				_delay_ms(2);				//kleines wait bevor abfrage 
 				while(uart_string1[4] == 0x31) //ASCII '1' --> moving
 				{

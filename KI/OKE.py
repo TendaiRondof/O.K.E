@@ -56,8 +56,6 @@ class YOLO_Manager(YOLO):
                 all_boxes.append(self.detect_img(image))
         return all_boxes
 
-
-
 class GUI(tk.Tk):
     def __init__(self,parent):
         super().__init__()
@@ -130,10 +128,10 @@ class Application:
         self.print("{} Solderjoints have been found".format(len(centers)))
         sleep(10)
         print("Mitte: 512,384")
-        for index,center in tqdm(enumerate(centers),file=self.print):
+        for index,center in enumerate(centers):
             if not self.myGui.take_shot:
                 break
-            #self.print("Solder Joint: {} From {}".format(index,len(centers)))
+            self.print("Solder Joint: {} From {}".format(index+1,len(centers)))
             ###############################
             #send coordinates to robo arm
             self.MCRobo.send(center)

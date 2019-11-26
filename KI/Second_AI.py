@@ -49,5 +49,7 @@ class AiManager:
         
         history = self.model.fit(x,y,epochs=3)
 
+        return history
+
 
 

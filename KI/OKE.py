@@ -6,7 +6,7 @@ from keras_yolo3.yolo import YOLO
 from UART_Con import MCRoboarm
 from time import sleep
 import random
-
+from tqdm import tqdm
 
 class YOLO_Manager(YOLO):
     def __init__(self):
@@ -56,12 +56,11 @@ class YOLO_Manager(YOLO):
                 all_boxes.append(self.detect_img(image))
         return all_boxes
 
-
-
 class GUI(tk.Tk):
     def __init__(self,parent):
         super().__init__()
         self.bind("<F11>",self.toggle_fullscreen)
+        self.bind("<F4>",self.kill_programm)
         self.fullscreen = True
         self.attributes("-fullscreen",self.fullscreen )
         self.parent = parent
@@ -76,6 +75,9 @@ class GUI(tk.Tk):
     def toggle_fullscreen(self,x):
         self.fullscreen = not self.fullscreen
         self.attributes("-fullscreen",self.fullscreen)
+
+    def kill_programm(self):
+        exit()
 
     def set_take_shot(self):
         self.take_shot = not self.take_shot
@@ -92,7 +94,7 @@ class Application:
         self.print("Starting...")
         self.yolo = YOLO_Manager()
         self.print("AI 1 has been loded")
-        self.MCRobo = MCRoboarm("00:06:66:76:52:C3",1)
+        self.MCRobo = MCRoboarm("00:06:66:76:52:9F",1)
         self.print("Röbi is connected")        
         self.cam = cv2.VideoCapture(0)
         self.print("Cameras is conected")
@@ -126,10 +128,10 @@ class Application:
         self.print("{} Solderjoints have been found".format(len(centers)))
         sleep(10)
         print("Mitte: 512,384")
-        for center in centers:
+        for index,center in enumerate(centers):
             if not self.myGui.take_shot:
                 break
-            self.print("Sending coord: {}".format(center))
+            self.print("Solder Joint: {} From {}".format(index+1,len(centers)))
             ###############################
             #send coordinates to robo arm
             self.MCRobo.send(center)

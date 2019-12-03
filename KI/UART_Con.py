@@ -42,4 +42,4 @@ class MCRoboarm:
             return e,0
     
     def disconnect(self):
-        sock.close()
+        self.sock.close()

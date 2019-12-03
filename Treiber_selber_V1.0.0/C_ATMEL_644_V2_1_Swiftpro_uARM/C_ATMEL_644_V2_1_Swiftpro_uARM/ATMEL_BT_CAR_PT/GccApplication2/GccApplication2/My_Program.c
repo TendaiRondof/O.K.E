@@ -232,28 +232,10 @@ ISR (USART0_RX_vect) // UART0 Empfangsinterrupt
 		break;
 			
 		default:
-			PORTB|=0x01;
 			data[data_bytes_recieved]=nextChar;
 			data_bytes_recieved++;
 		break;
 	}
-	
-	
-  // Daten aus dem Puffer lesen
-  
-	//if( nextChar != '\n' && uart_str_count1 < UART_MAXSTELLEN)
-	//{
-	  //data[data_bytes_recieved]=nextChar;
-	  //data_bytes_recieved++;	
-	//} 
-	//else
-	//{
-		//for (i=0;i<=data_bytes_recieved;i++)
-		//{
-			//final_data[i]=data[i];
-		//}  
-	 //uart_str_complete=1;
-	//}
  }
 ISR (USART1_RX_vect)
 {
@@ -391,14 +373,14 @@ void start_up_routine ()
 	init_UART0();
 	init_UART1();
 	wait_1ms(10);
-	wait_1ms(50);
-	write_text(0,0,PSTR("        OKE         "));
-	write_text(1,0,PSTR("        BY          "));
-	write_text(2,0,PSTR("        JAN         "));
-	write_text(3,0,PSTR("       TENDAI       "));
+	//write_text(0,0,PSTR("        OKE         "));
+	//write_text(1,0,PSTR("        BY          "));
+	//write_text(2,0,PSTR("        JAN         "));
+	//write_text(3,0,PSTR("       TENDAI       "));
 	set_led_mode(IDLE);
 	goto_start();
 	make_sound();
+	wait_1ms(2000);	
 	//while(pc_ready==0)
 	//{
 		//send_Byte_0('D');
@@ -656,10 +638,9 @@ int main (void)
 	write_text(1,0,PSTR("        BY          "));
 	write_text(2,0,PSTR("        JAN         "));
 	write_text(3,0,PSTR("       TENDAI       "));
-	//_delay_ms(5000);
+
 	//set_led_mode(IDLE);
 	clear_lcd();
-	PORTB=0x01;
 	goto_start();
 	while(1)
 	{
@@ -688,13 +669,11 @@ int main (void)
 			wait_1ms(50);
 			play_short();
 			routine_done=0;
-			PORTB++;
 		}
 		if (uart_str_complete!=0)
 		{
 			uart_str_complete=0;
-			send_Byte_0('1');	
-			PORTB|=0x02;
+			send_Byte_0('1');
 			recieved_Y=(data[1]-48)*1000+(data[2]-48)*100+(data[3]-48)*10+data[4]-48;
 			recieved_X=(data[6]-48)*1000+(data[7]-48)*100+(data[8]-48)*10+data[9]-48;
 			write_zahl(0,0,recieved_X,5,0,0);
@@ -708,7 +687,6 @@ int main (void)
 			}
 			if (good!=0)
 			{
-				PORTB|0x04;
 				//Grid anpassung
 				recieved_X-=384;
 				recieved_Y-=512;
@@ -727,7 +705,6 @@ int main (void)
 			}
 			else
 			{
-				PORTB|0x08;
 				set_led_mode(IDLE);
 				false_state=0;
 			}

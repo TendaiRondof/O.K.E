@@ -7,6 +7,7 @@ from UART_Con import MCRoboarm
 from time import sleep
 import random
 from tqdm import tqdm
+from os import listdir
 
 class YOLO_Manager(YOLO):
     def __init__(self):
@@ -94,9 +95,9 @@ class Application:
         self.print("Starting...")
         self.yolo = YOLO_Manager()
         self.print("AI 1 has been loded")
-        self.MCRobo = MCRoboarm("00:06:66:76:52:9F",1)
+        self.MCRobo = MCRoboarm("00:06:66:EC:07:8A",1)
         self.print("Röbi is connected")        
-        self.cam = cv2.VideoCapture(0)
+        self.cam = cv2.VideoCapture(1)
         self.print("Cameras is conected")
 
     def analyze(self,img):
@@ -119,6 +120,8 @@ class Application:
 
                         top, left, bottom, right = box
                         ret_img = cv2.rectangle(img,(left,top),(right,bottom),(255,0,0),2)
+        else:
+            return None,centers,return_boxes
              
         return ret_img,centers,return_boxes
     
@@ -157,10 +160,10 @@ class Application:
             fin,succ = self.MCRobo.recieve()
             if not(succ and fin):
                 raise Exception("Socked Down")
-            sleep(1)                
+            sleep(2)                
             joint_img = self.take_pic()
             self.show_image_in_tk(joint_img)
-            sleep(0.1)
+            sleep(0.5)
             # use second AI
             results.append(int((random.random()*1000))%3)
             #get result

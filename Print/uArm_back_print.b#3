@@ -8567,20 +8567,20 @@ design rules under a new name.</description>
 <attribute name="POPULARITY" value="5" x="77.5208" y="29.8704" size="1.778" layer="27" display="off"/>
 <attribute name="VALUE" x="77.5208" y="30.1244" size="0.0254" layer="27"/>
 </element>
-<element name="LSP2" library="solpad" library_urn="urn:adsk.eagle:library:364" package="LSP11" package3d_urn="urn:adsk.eagle:package:26502/1" value="LSP11" x="69.85" y="42.8752" smashed="yes">
-<attribute name="NAME" x="68.58" y="44.1452" size="1.27" layer="25" ratio="10"/>
-<attribute name="POPULARITY" value="5" x="69.85" y="42.8752" size="1.778" layer="27" display="off"/>
-<attribute name="VALUE" x="69.85" y="43.1292" size="0.0254" layer="27"/>
+<element name="LSP2" library="solpad" library_urn="urn:adsk.eagle:library:364" package="LSP11" package3d_urn="urn:adsk.eagle:package:26502/1" value="LSP11" x="-16.8656" y="-41.402" smashed="yes">
+<attribute name="NAME" x="-18.1356" y="-40.132" size="1.27" layer="25" ratio="10"/>
+<attribute name="POPULARITY" value="5" x="-16.8656" y="-41.402" size="1.778" layer="27" display="off"/>
+<attribute name="VALUE" x="-16.8656" y="-41.148" size="0.0254" layer="27"/>
 </element>
-<element name="LSP3" library="solpad" library_urn="urn:adsk.eagle:library:364" package="LSP11" package3d_urn="urn:adsk.eagle:package:26502/1" value="LSP11" x="72.4916" y="42.8752" smashed="yes">
-<attribute name="NAME" x="71.2216" y="44.1452" size="1.27" layer="25" ratio="10"/>
-<attribute name="POPULARITY" value="5" x="72.4916" y="42.8752" size="1.778" layer="27" display="off"/>
-<attribute name="VALUE" x="72.4916" y="43.1292" size="0.0254" layer="27"/>
+<element name="LSP3" library="solpad" library_urn="urn:adsk.eagle:library:364" package="LSP11" package3d_urn="urn:adsk.eagle:package:26502/1" value="LSP11" x="-16.8656" y="-45.72" smashed="yes">
+<attribute name="NAME" x="-18.1356" y="-44.45" size="1.27" layer="25" ratio="10"/>
+<attribute name="POPULARITY" value="5" x="-16.8656" y="-45.72" size="1.778" layer="27" display="off"/>
+<attribute name="VALUE" x="-16.8656" y="-45.466" size="0.0254" layer="27"/>
 </element>
-<element name="LSP4" library="solpad" library_urn="urn:adsk.eagle:library:364" package="LSP11" package3d_urn="urn:adsk.eagle:package:26502/1" value="LSP11" x="75.184" y="42.8752" smashed="yes">
-<attribute name="NAME" x="73.914" y="44.1452" size="1.27" layer="25" ratio="10"/>
-<attribute name="POPULARITY" value="5" x="75.184" y="42.8752" size="1.778" layer="27" display="off"/>
-<attribute name="VALUE" x="75.184" y="43.1292" size="0.0254" layer="27"/>
+<element name="LSP4" library="solpad" library_urn="urn:adsk.eagle:library:364" package="LSP11" package3d_urn="urn:adsk.eagle:package:26502/1" value="LSP11" x="-16.8656" y="-50.038" smashed="yes">
+<attribute name="NAME" x="-18.1356" y="-48.768" size="1.27" layer="25" ratio="10"/>
+<attribute name="POPULARITY" value="5" x="-16.8656" y="-50.038" size="1.778" layer="27" display="off"/>
+<attribute name="VALUE" x="-16.8656" y="-49.784" size="0.0254" layer="27"/>
 </element>
 <element name="LSP5" library="solpad" library_urn="urn:adsk.eagle:library:364" package="LSP11" package3d_urn="urn:adsk.eagle:package:26502/1" value="LSP11" x="61.6712" y="2.3876" smashed="yes">
 <attribute name="NAME" x="60.4012" y="3.6576" size="1.27" layer="25" ratio="10"/>
@@ -8691,9 +8691,6 @@ design rules under a new name.</description>
 <contactref element="IC2" pad="2"/>
 <contactref element="C17" pad="2"/>
 <contactref element="C18" pad="2"/>
-<contactref element="LSP2" pad="MP"/>
-<contactref element="LSP3" pad="MP"/>
-<contactref element="LSP4" pad="MP"/>
 <wire x1="72.644" y1="40.612" x2="75.438" y2="40.612" width="0" layer="19" extent="1-1"/>
 <wire x1="69.85" y1="40.612" x2="72.644" y2="40.612" width="0" layer="19" extent="1-1"/>
 <wire x1="74.42" y1="30.485" x2="75.438" y2="40.612" width="0" layer="19" extent="1-16"/>
@@ -8729,9 +8726,6 @@ design rules under a new name.</description>
 <wire x1="13" y1="42.95" x2="14.732" y2="32.004" width="0" layer="19" extent="16-16"/>
 <wire x1="52.832" y1="42.545" x2="40.131" y2="42.703" width="0" layer="19" extent="1-1"/>
 <wire x1="15.7124" y1="4.1656" x2="27.7216" y2="15.1384" width="0" layer="19" extent="1-1"/>
-<wire x1="69.85" y1="42.8752" x2="15.7124" y2="4.1656" width="0" layer="19" extent="1-1"/>
-<wire x1="72.4916" y1="42.8752" x2="69.85" y2="42.8752" width="0" layer="19" extent="1-1"/>
-<wire x1="75.184" y1="42.8752" x2="72.4916" y2="42.8752" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="VCC">
 <contactref element="R8" pad="2"/>

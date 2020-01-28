@@ -63,8 +63,8 @@ routine_done        0x1               My_Program.o
 play_sound          0x1               My_Program.o
 LCD_Taster          0x1               My_Program.o
 k                   0x1               My_Program.o
+play_beep           0x1               My_Program.o
 ptr_Abschnitt       0x2               My_Program.o
-sound               0x1               My_Program.o
 good                0x1               My_Program.o
 data_bytes_recieved
                     0x1               My_Program.o
@@ -685,8 +685,8 @@ END GROUP
                 0x00800367                play_sound
                 0x00800368                LCD_Taster
                 0x00800369                k
-                0x0080036a                ptr_Abschnitt
-                0x0080036c                sound
+                0x0080036a                play_beep
+                0x0080036b                ptr_Abschnitt
                 0x0080036d                good
                 0x0080036e                data_bytes_recieved
                 0x0080036f                uart_str_count
@@ -791,20 +791,20 @@ END GROUP
  .debug_abbrev  0x00000000      0x66e C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.2.150/gcc/dev/atmega644pa/avr5/crtatmega644pa.o
  .debug_abbrev  0x0000066e      0x29a My_Program.o
 
-.debug_line     0x00000000     0x1a45
+.debug_line     0x00000000     0x1a3f
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x151 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.2.150/gcc/dev/atmega644pa/avr5/crtatmega644pa.o
- .debug_line    0x00000151     0x18f4 My_Program.o
+ .debug_line    0x00000151     0x18ee My_Program.o
 
 .debug_frame    0x00000000      0x358
  *(.debug_frame)
  .debug_frame   0x00000000      0x358 My_Program.o
 
-.debug_str      0x00000000      0x673
+.debug_str      0x00000000      0x67d
  *(.debug_str)
  .debug_str     0x00000000      0x252 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.2.150/gcc/dev/atmega644pa/avr5/crtatmega644pa.o
- .debug_str     0x00000252      0x421 My_Program.o
-                                0x478 (size before relaxing)
+ .debug_str     0x00000252      0x42b My_Program.o
+                                0x47c (size before relaxing)
 
 .debug_loc      0x00000000      0x724
  *(.debug_loc)

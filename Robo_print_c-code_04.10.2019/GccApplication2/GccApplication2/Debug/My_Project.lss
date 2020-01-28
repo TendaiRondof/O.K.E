@@ -19,15 +19,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   7 .debug_abbrev 00000908  00000000  00000000  000081d0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00001a45  00000000  00000000  00008ad8  2**0
+  8 .debug_line   00001a3f  00000000  00000000  00008ad8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000358  00000000  00000000  0000a520  2**2
+  9 .debug_frame  00000358  00000000  00000000  0000a518  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000673  00000000  00000000  0000a878  2**0
+ 10 .debug_str    0000067d  00000000  00000000  0000a870  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00000724  00000000  00000000  0000aeeb  2**0
+ 11 .debug_loc    00000724  00000000  00000000  0000aeed  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000000d0  00000000  00000000  0000b60f  2**0
+ 12 .debug_ranges 000000d0  00000000  00000000  0000b611  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -9157,47 +9157,49 @@ int main (void)
     494a:	81 70       	andi	r24, 0x01	; 1
     494c:	99 27       	eor	r25, r25
     494e:	89 2b       	or	r24, r25
-    4950:	41 f0       	breq	.+16     	; 0x4962 <main+0x54>
+    4950:	21 f0       	breq	.+8      	; 0x495a <main+0x4c>
 		{
-			beep(sound);
-    4952:	80 91 6c 03 	lds	r24, 0x036C	; 0x80036c <sound>
-    4956:	0e 94 a6 03 	call	0x74c	; 0x74c <beep>
 			goto_start();
-    495a:	0e 94 91 03 	call	0x722	; 0x722 <goto_start>
+    4952:	0e 94 91 03 	call	0x722	; 0x722 <goto_start>
 			make_sound();
-    495e:	0e 94 8d 02 	call	0x51a	; 0x51a <make_sound>
+    4956:	0e 94 8d 02 	call	0x51a	; 0x51a <make_sound>
 		}		
-		if ((neu&0x02)<taster)
-    4962:	8a 81       	ldd	r24, Y+2	; 0x02
-    4964:	88 2f       	mov	r24, r24
-    4966:	90 e0       	ldi	r25, 0x00	; 0
-    4968:	9c 01       	movw	r18, r24
-    496a:	22 70       	andi	r18, 0x02	; 2
-    496c:	33 27       	eor	r19, r19
-    496e:	89 81       	ldd	r24, Y+1	; 0x01
-    4970:	88 2f       	mov	r24, r24
-    4972:	90 e0       	ldi	r25, 0x00	; 0
-    4974:	28 17       	cp	r18, r24
-    4976:	39 07       	cpc	r19, r25
-    4978:	74 f4       	brge	.+28     	; 0x4996 <main+0x88>
+		if ((PINB&0x02)>(neu&0x02))
+    495a:	83 e2       	ldi	r24, 0x23	; 35
+    495c:	90 e0       	ldi	r25, 0x00	; 0
+    495e:	fc 01       	movw	r30, r24
+    4960:	80 81       	ld	r24, Z
+    4962:	88 2f       	mov	r24, r24
+    4964:	90 e0       	ldi	r25, 0x00	; 0
+    4966:	9c 01       	movw	r18, r24
+    4968:	22 70       	andi	r18, 0x02	; 2
+    496a:	33 27       	eor	r19, r19
+    496c:	8a 81       	ldd	r24, Y+2	; 0x02
+    496e:	88 2f       	mov	r24, r24
+    4970:	90 e0       	ldi	r25, 0x00	; 0
+    4972:	82 70       	andi	r24, 0x02	; 2
+    4974:	99 27       	eor	r25, r25
+    4976:	82 17       	cp	r24, r18
+    4978:	93 07       	cpc	r25, r19
+    497a:	6c f4       	brge	.+26     	; 0x4996 <main+0x88>
 		{
-			beep(sound);
-    497a:	80 91 6c 03 	lds	r24, 0x036C	; 0x80036c <sound>
+			beep(1);
+    497c:	81 e0       	ldi	r24, 0x01	; 1
     497e:	0e 94 a6 03 	call	0x74c	; 0x74c <beep>
-			if (sound)
-    4982:	80 91 6c 03 	lds	r24, 0x036C	; 0x80036c <sound>
+			if (play_beep!=0)
+    4982:	80 91 6a 03 	lds	r24, 0x036A	; 0x80036a <play_beep>
     4986:	88 23       	and	r24, r24
     4988:	19 f0       	breq	.+6      	; 0x4990 <main+0x82>
 			{
-				sound=0;
-    498a:	10 92 6c 03 	sts	0x036C, r1	; 0x80036c <sound>
+				play_beep=0;
+    498a:	10 92 6a 03 	sts	0x036A, r1	; 0x80036a <play_beep>
     498e:	03 c0       	rjmp	.+6      	; 0x4996 <main+0x88>
 			}
 			else
 			{
-				sound=1;
+				play_beep=1;
     4990:	81 e0       	ldi	r24, 0x01	; 1
-    4992:	80 93 6c 03 	sts	0x036C, r24	; 0x80036c <sound>
+    4992:	80 93 6a 03 	sts	0x036A, r24	; 0x80036a <play_beep>
 			}
 		}
 		if (play_sound!=0)
@@ -9356,7 +9358,6 @@ int main (void)
     4a94:	98 a3       	std	Y+32, r25	; 0x20
     4a96:	8f 8f       	std	Y+31, r24	; 0x1f
 			_delay_ms(50);
-			//play_short();
 			routine_done=0;
     4a98:	10 92 66 03 	sts	0x0366, r1	; 0x800366 <routine_done>
 		}
@@ -9926,8 +9927,8 @@ int main (void)
 				{
 					to_uARM("M2200\n"); //uARM in moving? 1 Yes / 0 N0
 				}
-				beep(sound);
-    4e84:	80 91 6c 03 	lds	r24, 0x036C	; 0x80036c <sound>
+				beep(play_beep);
+    4e84:	80 91 6a 03 	lds	r24, 0x036A	; 0x80036a <play_beep>
     4e88:	0e 94 a6 03 	call	0x74c	; 0x74c <beep>
 				send_Byte_0('1');		//return that action done
     4e8c:	81 e3       	ldi	r24, 0x31	; 49

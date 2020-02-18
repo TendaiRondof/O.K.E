@@ -17738,6 +17738,8 @@ Source: http://www.bourns.com/data/global/PDFs/3223.PDF</description>
 <part name="C10" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="C-EU" device="C0805" package3d_urn="urn:adsk.eagle:package:23617/2" value="1uF"/>
 <part name="GND8" library="supply1" deviceset="GND" device=""/>
 <part name="P+4" library="supply1" deviceset="VCC" device=""/>
+<part name="JP8" library="jumper" deviceset="JP1E" device="" value=" "/>
+<part name="JP9" library="jumper" deviceset="JP1E" device="" value=" "/>
 </parts>
 <sheets>
 <sheet>
@@ -17750,7 +17752,8 @@ Source: http://www.bourns.com/data/global/PDFs/3223.PDF</description>
 <text x="142.24" y="160.02" size="1.778" layer="97"> 8-Bit PWM</text>
 <text x="50.8" y="7.62" size="1.778" layer="97">Interface zum PC via ICE für
 Debugger und Download</text>
-<wire x1="7.62" y1="254" x2="381" y2="254" width="0.1524" layer="97"/>
+<wire x1="7.62" y1="254" x2="247.65" y2="254" width="0.1524" layer="97"/>
+<wire x1="247.65" y1="254" x2="381" y2="254" width="0.1524" layer="97"/>
 <wire x1="7.62" y1="127" x2="7.62" y2="254" width="0.1524" layer="97"/>
 <text x="10.16" y="129.54" size="1.778" layer="97">Microcontroller ATmega644PA</text>
 <wire x1="137.16" y1="171.45" x2="137.16" y2="167.64" width="0.1524" layer="97"/>
@@ -17822,6 +17825,8 @@ RST    GND</text>
 <wire x1="332.74" y1="152.4" x2="378.46" y2="152.4" width="0.1524" layer="97"/>
 <wire x1="378.46" y1="152.4" x2="378.46" y2="213.36" width="0.1524" layer="97"/>
 <text x="337.82" y="154.94" size="1.778" layer="97">Lichtsensor</text>
+<wire x1="165.1" y1="127" x2="247.65" y2="127" width="0.1524" layer="97"/>
+<wire x1="247.65" y1="127" x2="247.65" y2="254" width="0.1524" layer="97"/>
 </plain>
 <instances>
 <instance part="P+22" gate="VCC" x="177.8" y="121.92" smashed="yes">
@@ -18239,6 +18244,8 @@ RST    GND</text>
 <instance part="P+4" gate="VCC" x="187.96" y="30.48" smashed="yes">
 <attribute name="VALUE" x="185.42" y="30.48" size="1.778" layer="96"/>
 </instance>
+<instance part="JP8" gate="A" x="137.16" y="231.14" smashed="yes" rot="R270"/>
+<instance part="JP9" gate="A" x="137.16" y="226.06" smashed="yes" rot="R270"/>
 </instances>
 <busses>
 </busses>
@@ -18588,6 +18595,7 @@ RST    GND</text>
 <wire x1="127" y1="231.14" x2="134.62" y2="231.14" width="0.1524" layer="91"/>
 <label x="129.54" y="231.14" size="1.778" layer="95"/>
 <pinref part="IC1" gate="G$1" pin="(PCINT7/ADC7)PA7"/>
+<pinref part="JP8" gate="A" pin="1"/>
 </segment>
 <segment>
 <pinref part="R26" gate="G$1" pin="1"/>
@@ -18603,6 +18611,7 @@ RST    GND</text>
 <wire x1="127" y1="228.6" x2="134.62" y2="228.6" width="0.1524" layer="91"/>
 <label x="129.54" y="228.6" size="1.778" layer="95"/>
 <pinref part="IC1" gate="G$1" pin="(PCINT6/ADC6)PA6"/>
+<pinref part="JP8" gate="A" pin="2"/>
 </segment>
 </net>
 <net name="PA5" class="0">
@@ -18610,6 +18619,7 @@ RST    GND</text>
 <wire x1="127" y1="226.06" x2="134.62" y2="226.06" width="0.1524" layer="91"/>
 <label x="129.54" y="226.06" size="1.778" layer="95"/>
 <pinref part="IC1" gate="G$1" pin="(PCINT5/ADC5)PA5"/>
+<pinref part="JP9" gate="A" pin="1"/>
 </segment>
 </net>
 <net name="PA4" class="0">
@@ -18617,6 +18627,7 @@ RST    GND</text>
 <wire x1="127" y1="223.52" x2="134.62" y2="223.52" width="0.1524" layer="91"/>
 <label x="129.54" y="223.52" size="1.778" layer="95"/>
 <pinref part="IC1" gate="G$1" pin="(PCINT4/ADC4)PA4"/>
+<pinref part="JP9" gate="A" pin="2"/>
 </segment>
 </net>
 <net name="PA3" class="0">

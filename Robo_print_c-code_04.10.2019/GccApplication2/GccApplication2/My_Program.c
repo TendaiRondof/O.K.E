@@ -29,7 +29,6 @@ by Tendai und Jan
 #define ALL_OFF			0x50
 #define ROBO_ON_THE_RUN	0x30
 #define WAITING_FOR_FIRST_CMD	0x10
-//#define NULL
 #define FINISHED		0x20
 #define IDLE			0x40
 
@@ -416,138 +415,12 @@ int main (void)
 	int recieved_X,recieved_Y;
 	unsigned char buffer [30];
 	unsigned char return_buffer[30];
-	start_up_routine();
-	
-	/*
-		//C#2/Db2  	69.30 	497.87
-		//D#2/Eb2  	77.78 	443.55
-		//F#2/Gb2  	92.50 	372.98
-		//G#2/Ab2  	103.83 	332.29
-		//A#2/Bb2  	116.54 	296.03
-		//C#3/Db3  	138.59 	248.93
-		//D#3/Eb3  	155.56 	221.77
-		//C0=16,
-		//C_0=17.32,
-		//D0=18.35,
-		//D_0=19.45,
-		//E0=20.60,
-		//F0=21.83,
-		//F_0=23.12,
-		//G0=24.50,
-		//G_0=25.96,
-		//A0=27.50,
-		//A_0=29.14,
-		//B0=30.87,
-		//C1=32.70,
-		//C_1=34.65,
-		//D1=	36.71,
-		//D_1=38.89,
-		//E1=	41.20,
-		//F1=43.65,
-		//F_1=46.25,
-		//G1=	49.00,
-		//G_1=51.91,
-		//A1=55.00,
-		//A_1=58.27,*/
-	/*
-	//unsigned int notes[NOTEAMOUNT]{62,65,73,82,87,98,119,123,130,147,165,175}
-	//typedef enum
-	//{
-			//
-			//B1=62,
-			//C2=65,
-			//C_2=69,
-			//D2=73,
-			//D_2=78,
-			//E2=82,
-			//F2=87,
-			//F_2=93, 	
-			//G2=98,
-			//G_2=104, 	
-			//A2=110,
-			//A_2=117, 	
-			//B2=	123,
-			//C3=131,
-			//C_3=139, 	
-			//D3=147,
-			//D_3=156,
-			//E3=165,
-			//F3=175,
-			//F_3=185, 	
-			//G3=196,
-			//G_3=208, 	
-			//A3=220,
-			//A_3=233, 	
-			//B3=247,
-			//C4=262,
-			//C_4=277, 	
-			//D4=294,
-			//D_4=311, 	
-			//E4=330,
-			//F4=349,
-			//F_4=370, 
-			//G4=392,
-			//G_4=415, 
-			//A4=440,
-			//A_4=466,
-			//B4=	494,
-			//C5=523,
-			//C_5=554,
-			//D5=587,
-			//D_5=622, 	
-			//E5=659,
-			//F5=698,	
-			//F_5=740, 
-			//G5=784,
-			//G_5=831, 	
-			//A5=880,
-			//A_5=932,	
-			//B5=988,
-			//C6=	1047,
-			//C_6=1108, 
-			//D6=1175,
-			//D_6=1245,
-			//E6=1319,
-			//F6=1397,
-			//F_6=1480, 
-			//G6=1568,
-			//G_6=1661,
-			//A6=1760,
-			//A_6=1865,
-			//B6=1976,
-			//C7=2093,
-			//C_7=2217,
-			//D7=2349,
-			//D_7=2489,
-			//E7=2637,
-			//F7=2794,
-			//F_7=2960,
-			//G7=3136,
-			//G_7=3322,
-			//A7=	3520,
-			//A_7=3729,
-			//B7=3951,
-			//C8=4186,
-			//C_8=4435,
-			//D8=	4699,
-			//D_8=4978,
-			//E8=5274,
-			//F8=	5588,
-			//F_8=5920,
-			//G8=6272,
-			//G_8=6645,
-			//A8=7040,
-			//A_8=7459,
-			//B8=7902,
-			//
-	//} letter;
-	*/
-
-	//Note	Frequency (Hz)	
+	start_up_routine();	
 	goto_start();
 	to_uARM("M2210 F500 T20\n");
 	//set_led_mode(IDLE);
 	goto_start();
+	
 	while(1)
 	{	
 		taster=get_taster();
@@ -559,14 +432,9 @@ int main (void)
 		if ((PINB&0x02)>(neu&0x02))
 		{
 			beep(1);
-			if (play_beep!=0)
-			{
-				play_beep=0;
-			}
-			else
-			{
-				play_beep=1;
-			}
+			if (play_beep!=0)	play_beep=0;
+			else play_beep=1;
+
 		}
 		if (play_sound!=0)
 		{
@@ -590,9 +458,8 @@ int main (void)
 			snprintf(return_buffer,30,"%d %d",recieved_X,recieved_Y);
 			to_pc(return_buffer);
 			while(((false_state==0)&&(good==0))||((taster&0x01)!=0))
-			{
-				taster = get_taster();
-			}
+			taster = get_taster();
+			
 			if (good!=0)
 			{
 				//Grid anpassung
